@@ -5,7 +5,6 @@ load 'deploy' unless defined?(_cset)
 _cset :asset_env, "RAILS_GROUPS=assets"
 _cset :assets_prefix, "assets"
 _cset :shared_assets_prefix, "assets"
-_cset :assets_role, [:web]
 _cset :expire_assets_after, (3600 * 24 * 7)
 _cset(:asset_manifest_prefix) { (`sprockets -v`.chomp < "3.0" ? "manifest" : ".sprockets-manifest") rescue "manifest" }
 
@@ -40,7 +39,7 @@ namespace :deploy do
       :assets_prefix variable to match. If you customize shared assets path \
       prefix, override :shared_assets_prefix variable to match.
     DESC
-    task :symlink, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :symlink, :except => { :no_release => true } do
       run <<-CMD.compact
         rm -rf #{latest_release}/public/#{assets_prefix} &&
         mkdir -p #{latest_release}/public &&
@@ -59,7 +58,7 @@ namespace :deploy do
         set :rails_env, "production"
         set :asset_env, "RAILS_GROUPS=assets"
     DESC
-    task :precompile, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :precompile, :except => { :no_release => true } do
       run <<-CMD.compact
         cd -- #{latest_release} && 
         RAILS_ENV=#{rails_env.to_s.shellescape} #{asset_env} #{rake} assets:precompile
@@ -86,7 +85,7 @@ namespace :deploy do
       [internal] Updates the mtimes for assets that are required by the current release.
       This task runs before assets:precompile.
     DESC
-    task :update_asset_mtimes, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :update_asset_mtimes, :except => { :no_release => true } do
       # Fetch assets/manifest contents.
       manifest_content = capture("[ -e '#{shared_path.shellescape}/#{shared_assets_prefix}/#{asset_manifest_prefix}*' ] && cat #{shared_path.shellescape}/#{shared_assets_prefix}/#{asset_manifest_prefix}* || echo").strip
 
@@ -114,7 +113,7 @@ namespace :deploy do
         set :rails_env, "production"
         set :asset_env, "RAILS_GROUPS=assets"
     DESC
-    task :clean, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :clean, :except => { :no_release => true } do
       run "cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} #{asset_env} assets:clean"
     end
 
@@ -124,7 +123,7 @@ namespace :deploy do
       to change the assets expiry time. Assets will only be deleted if they are not required by
       an existing release.
     DESC
-    task :clean_expired, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :clean_expired, :except => { :no_release => true } do
       # Fetch all assets_manifest contents.
       manifests_output = capture <<-CMD.compact
         for manifest in #{releases_path.shellescape}/*/assets_manifest.*; do
@@ -173,7 +172,7 @@ namespace :deploy do
       Rolls back assets to the previous release by symlinking the release's manifest
       to shared/assets/manifest, and finally recompiling or regenerating nondigest assets.
     DESC
-    task :rollback, :roles => lambda { assets_role }, :except => { :no_release => true } do
+    task :rollback, :except => { :no_release => true } do
       previous_manifest = capture("ls #{previous_release.shellescape}/assets_manifest.*").strip
       if capture("[ -e #{previous_manifest.shellescape} ] && echo true || echo false").strip != 'true'
         puts "#{previous_manifest} is missing! Cannot roll back assets. " <<
