@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Jamis Buck", "Lee Hambley"]
   s.email       = ["jamis@jamisbuck.org", "lee.hambley@gmail.com"]
   s.homepage    = "http://github.com/capistrano/capistrano"
-  s.summary     = %q{Capistrano - Welcome to easy deployment with Ruby over SSH}
-  s.description = %q{Capistrano is a utility and framework for executing commands in parallel on multiple remote machines, via SSH.}
+  s.summary     = %q{Capistrano Lite - single-host Ruby deployments over SSH}
+  s.description = %q{Capistrano Lite is a simplified fork of Capistrano 2 focused on deploying one Ruby application to one host over SSH, with git or copy strategies.}
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
@@ -22,18 +22,18 @@ Gem::Specification.new do |s|
 
   s.specification_version = 3 if s.respond_to? :specification_version
 
+  s.required_ruby_version = ">= 2.6"
+
   if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
     s.add_runtime_dependency(%q<highline>, [">= 0"])
     s.add_runtime_dependency(%q<net-ssh>, [">= 2.0.14"])
     s.add_runtime_dependency(%q<net-sftp>, [">= 2.0.0"])
     s.add_runtime_dependency(%q<net-scp>, [">= 1.0.0"])
-    s.add_runtime_dependency(%q<net-ssh-gateway>, [">= 1.1.0"])
     s.add_development_dependency(%q<mocha>, ["0.9.12"])
   else
     s.add_dependency(%q<net-ssh>, [">= 2.0.14"])
     s.add_dependency(%q<net-sftp>, [">= 2.0.0"])
     s.add_dependency(%q<net-scp>, [">= 1.0.0"])
-    s.add_dependency(%q<net-ssh-gateway>, [">= 1.1.0"])
     s.add_dependency(%q<highline>, [">= 0"])
     s.add_dependency(%q<mocha>, ["0.9.12"])
   end

@@ -2,6 +2,10 @@ module Capistrano
   module Deploy
     module Strategy
       def self.new(strategy, config={})
+        strategy = strategy.to_sym
+        unless [:remote_cache, :copy].include?(strategy)
+          raise Capistrano::Error, "only :remote_cache and :copy strategies are supported"
+        end
         strategy_file = "capistrano/recipes/deploy/strategy/#{strategy}"
         strategy_const = strategy.to_s.capitalize.gsub(/_(.)/) { $1.upcase }
 

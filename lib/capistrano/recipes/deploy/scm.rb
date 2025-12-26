@@ -2,6 +2,8 @@ module Capistrano
   module Deploy
     module SCM
       def self.new(scm, config={})
+        scm = scm.to_sym
+        raise Capistrano::Error, "only git SCM is supported" unless scm == :git
         scm_file = "capistrano/recipes/deploy/scm/#{scm}"
         require(scm_file)
 

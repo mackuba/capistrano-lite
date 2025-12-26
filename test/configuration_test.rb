@@ -22,10 +22,10 @@ class ConfigurationTest < Test::Unit::TestCase
     Capistrano::Command.expects(:process).with(&process_args)
 
     @config.load do
-      role :test, "www.capistrano.test"
+      server "www.capistrano.test"
       set  :message, "hello world"
       namespace :testing do
-        task :example, :roles => :test do
+        task :example do
           run "echo '#{message}'"
         end
       end

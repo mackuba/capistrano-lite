@@ -1,19 +1,10 @@
-## Capistrano
+## Capistrano Lite
 
-[![Build
-Status](https://secure.travis-ci.org/capistrano/capistrano.png)](http://travis-ci.org/capistrano/capistrano)[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/capistrano/capistrano)
-
-
-Capistrano is a utility and framework for executing commands in parallel on
-multiple remote machines, via SSH. It uses a simple DSL (borrowed in part from
-[Rake](http://rake.rubyforge.org/)) that allows you to define _tasks_, which may
-be applied to machines in certain roles. It also supports tunneling connections
-via some gateway machine to allow operations to be performed behind VPN's and
-firewalls.
-
-Capistrano was originally designed to simplify and automate deployment of web
-applications to distributed environments, and originally came bundled with a set
-of tasks designed for deploying Rails applications.
+Capistrano Lite is a simplified fork of Capistrano 2 focused on deploying a
+single Ruby application to a single host over SSH. It keeps the core deploy
+DSL, the git remote cache and copy strategies, release rotation with rollbacks,
+and the logging/formatting you expect while stripping away roles, stages,
+gateways, plugins, and legacy SCMs.
 
 ## Documentation
 
@@ -24,9 +15,8 @@ of tasks designed for deploying Rails applications.
 * [Net::SSH](http://net-ssh.rubyforge.org)
 * [Net::SFTP](http://net-ssh.rubyforge.org)
 * [Net::SCP](http://net-ssh.rubyforge.org)
-* [Net::SSH::Gateway](http://net-ssh.rubyforge.org)
 * [HighLine](http://highline.rubyforge.org)
-* [Ruby](http://www.ruby-lang.org/en/) &#x2265; 1.8.7
+* [Ruby](http://www.ruby-lang.org/en/) &#x2265; 2.6
 
 If you want to run the tests, you'll also need to install the dependencies with
 Bundler, see the `Gemfile` within .
@@ -37,27 +27,33 @@ Capistrano is "opinionated software", which means it has very firm ideas about
 how things ought to be done, and tries to force those ideas on you. Some of the
 assumptions behind these opinions are:
 
-* You are using SSH to access the remote servers.
-* You either have the same password to all target machines, or you have public
-  keys in place to allow passwordless access to them.
-
-Do not expect these assumptions to change.
+* You are using SSH keys to access the remote server.
+* You deploy from git (remote_cache by default) or copy the project archive.
+* You are deploying to a single host with a single `config/deploy.rb` file.
 
 ## USAGE
 
-In general, you'll use Capistrano as follows:
+In general, you'll use Capistrano Lite as follows:
 
-* Create a recipe file ("capfile" or "Capfile").
+* Create a `config/deploy.rb` with your settings.
 * Use the `cap` script to execute your recipe.
 
 Use the `cap` script as follows:
 
-    cap sometask
+    cap deploy
 
-By default, the script will look for a file called one of `capfile` or
-`Capfile`. The `sometask` text indicates which task to execute. You can do
-"cap -h" to see all the available options and "cap -T" to see all the available
-tasks.
+Capistrano Lite loads `config/deploy.rb` directly and does not use a Capfile or
+stages. A minimal configuration looks like:
+
+```ruby
+set :application, "bluefeeds"
+set :repository, "git@github.com:mackuba/bluefeeds.git"
+set :server, "blue.mackuba.eu"
+```
+
+The default deploy path is `/var/www/#{application}`, the default strategy is
+`remote_cache`, and cleanup of old releases runs automatically after each
+deploy.
 
 ## CONTRIBUTING:
 

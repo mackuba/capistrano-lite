@@ -15,7 +15,7 @@ class CLIExecuteTest < Test::Unit::TestCase
   def setup
     @cli = MockCLI.new
     @logger = stub_everything
-    @config = stub(:logger => @logger, :debug= => nil, :dry_run= => nil, :preserve_roles= => nil)
+    @config = stub(:logger => @logger, :debug= => nil, :dry_run= => nil)
     @config.stubs(:set)
     @config.stubs(:load)
     @config.stubs(:trigger)
@@ -25,12 +25,6 @@ class CLIExecuteTest < Test::Unit::TestCase
   def test_execute_should_set_logger_verbosity
     @cli.options[:verbose] = 7
     @logger.expects(:level=).with(7)
-    @cli.execute!
-  end
-
-  def test_execute_should_set_password
-    @cli.options[:password] = "nosoup4u"
-    @config.expects(:set).with(:password, "nosoup4u")
     @cli.execute!
   end
 
@@ -89,7 +83,6 @@ class CLIExecuteTest < Test::Unit::TestCase
     @cli.options[:actions] = %w(first second)
     @config.expects(:find_and_execute_task).with("first", :before => :start, :after => :finish)
     @config.expects(:find_and_execute_task).with("second", :before => :start, :after => :finish)
-    @config.expects(:trigger).never
     @config.expects(:trigger).with(:load)
     @config.expects(:trigger).with(:exit)
     @cli.execute!

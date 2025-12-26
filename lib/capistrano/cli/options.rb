@@ -71,17 +71,9 @@ module Capistrano
             "Prints out commands without running them."
           ) { |value| options[:dry_run] = true }
 
-          opts.on("-p", "--password",
-            "Immediately prompt for the password."
-          ) { options[:password] = nil }
-
           opts.on("-q", "--quiet",
             "Make the output as quiet as possible."
           ) { options[:verbose] = 0 }
-
-          opts.on("-r", "--preserve-roles",
-            "Preserve task roles"
-          ) { options[:preserve_roles] = true }
 
           opts.on("-S", "--set-before NAME=VALUE",
             "Set a variable before the recipes are loaded."
@@ -162,10 +154,6 @@ module Capistrano
         extract_environment_variables!
 
         options[:actions].concat(args)
-
-        password = options.has_key?(:password)
-        options[:password] = Proc.new { self.class.password_prompt }
-        options[:password] = options[:password].call if password
       end
 
       # Extracts name=value pairs from the remaining command-line arguments
@@ -179,23 +167,11 @@ module Capistrano
 
       # Looks for a default recipe file in the current directory.
       def look_for_default_recipe_file! #:nodoc:
-        current = Dir.pwd
-
-        loop do
-          %w(Capfile capfile).each do |file|
-            if File.file?(file)
-              options[:recipes] << file
-              @logger.info "Using recipes from #{File.join(current,file)}"
-              return
-            end
-          end
-
-          pwd = Dir.pwd
-          Dir.chdir("..")
-          break if pwd == Dir.pwd # if changing the directory made no difference, then we're at the top
+        deploy_file = File.expand_path("config/deploy.rb")
+        if File.file?(deploy_file)
+          options[:recipes] << deploy_file
+          @logger.info "Using recipes from #{deploy_file}"
         end
-
-        Dir.chdir(current)
       end
 
       def default_sysconf #:nodoc:

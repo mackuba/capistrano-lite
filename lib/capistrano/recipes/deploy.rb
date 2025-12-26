@@ -24,10 +24,10 @@ _cset(:repository)  { abort "Please specify the repository that houses your appl
 # are not sufficient.
 # =========================================================================
 
-_cset(:scm) { scm_default }
-_cset :deploy_via, :checkout
+_cset(:scm) { :git }
+_cset :deploy_via, :remote_cache
 
-_cset(:deploy_to) { "/u/apps/#{application}" }
+_cset(:deploy_to) { "/var/www/#{application}" }
 _cset(:revision)  { source.head }
 
 _cset :rails_env, "production"
@@ -57,15 +57,13 @@ _cset(:shared_path)       { File.join(deploy_to, shared_dir) }
 _cset(:current_path)      { File.join(deploy_to, current_dir) }
 _cset(:release_path)      { File.join(releases_path, release_name) }
 
-_cset(:releases)          { capture("#{try_sudo} ls -x #{releases_path}", :except => { :no_release => true }).split.sort }
+_cset(:releases)          { capture("ls -x #{releases_path}", :except => { :no_release => true }).split.sort }
 _cset(:current_release)   { releases.length > 0 ? File.join(releases_path, releases.last) : nil }
 _cset(:previous_release)  { releases.length > 1 ? File.join(releases_path, releases[-2]) : nil }
 
-_cset(:current_revision)  { capture("#{try_sudo} cat #{current_path}/REVISION",     :except => { :no_release => true }).chomp }
-_cset(:latest_revision)   { capture("#{try_sudo} cat #{current_release}/REVISION",  :except => { :no_release => true }).chomp }
-_cset(:previous_revision) { capture("#{try_sudo} cat #{previous_release}/REVISION", :except => { :no_release => true }).chomp if previous_release }
-
-_cset(:run_method)        { fetch(:use_sudo, true) ? :sudo : :run }
+_cset(:current_revision)  { capture("cat #{current_path}/REVISION",     :except => { :no_release => true }).chomp }
+_cset(:latest_revision)   { capture("cat #{current_release}/REVISION",  :except => { :no_release => true }).chomp }
+_cset(:previous_revision) { capture("cat #{previous_release}/REVISION", :except => { :no_release => true }).chomp if previous_release }
 
 # some tasks, like symlink, need to always point at the latest release, but
 # they can also (occassionally) be called standalone. In the standalone case,
@@ -74,8 +72,6 @@ _cset(:run_method)        { fetch(:use_sudo, true) ? :sudo : :run }
 # standalone case, or during deployment.
 _cset(:latest_release) { exists?(:deploy_timestamped) ? release_path : current_release }
 
-_cset :maintenance_basename, "maintenance"
-_cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates", "maintenance.rhtml") }
 # =========================================================================
 # These are helper methods that will be available to your recipes.
 # =========================================================================
@@ -86,25 +82,7 @@ _cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates
 # in the project, it will set the :scm variable to :git and so on. If no
 # directory is found, it will default to :git.
 def scm_default
-  if File.exist? '.git'
-    :git
-  elsif File.exist? '.accurev'
-    :accurev
-  elsif File.exist? '.bzr'
-    :bzr
-  elsif File.exist? '.cvs'
-    :cvs
-  elsif File.exist? '_darcs'
-    :darcs
-  elsif File.exist? '.hg'
-    :mercurial
-  elsif File.exist? '.perforce'
-    :perforce
-  elsif File.exist? '.svn'
-    :subversion
-  else
-    :none
-  end
+  :git
 end
 
 # Auxiliary helper method for the `deploy:check' task. Lets you set up your
@@ -145,45 +123,6 @@ def run_locally(cmd)
 end
 
 
-# If a command is given, this will try to execute the given command, as
-# described below. Otherwise, it will return a string for use in embedding in
-# another command, for executing that command as described below.
-#
-# If :run_method is :sudo (or :use_sudo is true), this executes the given command
-# via +sudo+. Otherwise is uses +run+. If :as is given as a key, it will be
-# passed as the user to sudo as, if using sudo. If the :as key is not given,
-# it will default to whatever the value of the :admin_runner variable is,
-# which (by default) is unset.
-#
-# THUS, if you want to try to run something via sudo, and what to use the
-# root user, you'd just to try_sudo('something'). If you wanted to try_sudo as
-# someone else, you'd just do try_sudo('something', :as => "bob"). If you
-# always wanted sudo to run as a particular user, you could do
-# set(:admin_runner, "bob").
-def try_sudo(*args)
-  options = args.last.is_a?(Hash) ? args.pop : {}
-  command = args.shift
-  raise ArgumentError, "too many arguments" if args.any?
-
-  as = options.fetch(:as, fetch(:admin_runner, nil))
-  via = fetch(:run_method, :sudo)
-  if command
-    invoke_command(command, :via => via, :as => as)
-  elsif via == :sudo
-    sudo(:as => as)
-  else
-    ""
-  end
-end
-
-# Same as sudo, but tries sudo with :as set to the value of the :runner
-# variable (which defaults to "app").
-def try_runner(*args)
-  options = args.last.is_a?(Hash) ? args.pop : {}
-  args << options.merge(:as => fetch(:runner, "app"))
-  try_sudo(*args)
-end
-
 # =========================================================================
 # These are the tasks that are available to help with deploying web apps,
 # and specifically, Rails applications. You can have cap give you a summary
@@ -217,8 +156,8 @@ namespace :deploy do
   task :setup, :except => { :no_release => true } do
     dirs = [deploy_to, releases_path, shared_path]
     dirs += shared_children.map { |d| File.join(shared_path, d.split('/').last) }
-    run "#{try_sudo} mkdir -p #{dirs.join(' ')}"
-    run "#{try_sudo} chmod g+w #{dirs.join(' ')}" if fetch(:group_writable, true)
+    run "mkdir -p #{dirs.join(' ')}"
+    run "chmod g+w #{dirs.join(' ')}" if fetch(:group_writable, true)
   end
 
   desc <<-DESC
@@ -320,13 +259,13 @@ namespace :deploy do
   task :create_symlink, :except => { :no_release => true } do
     on_rollback do
       if previous_release
-        run "#{try_sudo} rm -f #{current_path}; #{try_sudo} ln -s #{previous_release} #{current_path}; true"
+        run "rm -f #{current_path}; ln -s #{previous_release} #{current_path}; true"
       else
         logger.important "no previous release to rollback to, rollback of symlink skipped"
       end
     end
 
-    run "#{try_sudo} rm -f #{current_path} && #{try_sudo} ln -s #{latest_release} #{current_path}"
+    run "rm -f #{current_path} && ln -s #{latest_release} #{current_path}"
   end
 
   desc <<-DESC
@@ -358,7 +297,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :restart, :roles => :app, :except => { :no_release => true } do
+  task :restart, :except => { :no_release => true } do
     # Empty Task to overload with your platform specifics
   end
 
@@ -370,7 +309,7 @@ namespace :deploy do
     DESC
     task :revision, :except => { :no_release => true } do
       if previous_release
-        run "#{try_sudo} rm #{current_path}; #{try_sudo} ln -s #{previous_release} #{current_path}"
+        run "rm #{current_path}; ln -s #{previous_release} #{current_path}"
       else
         abort "could not rollback the code because there is no prior release"
       end
@@ -382,7 +321,7 @@ namespace :deploy do
       (if ever) need to be called directly.
     DESC
     task :cleanup, :except => { :no_release => true } do
-      run "if [ `readlink #{current_path}` != #{current_release} ]; then #{try_sudo} rm -rf #{current_release}; fi"
+      run "if [ `readlink #{current_path}` != #{current_release} ]; then rm -rf #{current_release}; fi"
     end
 
     desc <<-DESC
@@ -423,7 +362,7 @@ namespace :deploy do
       set :migrate_env,    ""
       set :migrate_target, :latest
   DESC
-  task :migrate, :roles => :db, :only => { :primary => true } do
+  task :migrate do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
     migrate_env = fetch(:migrate_env, "")
@@ -456,13 +395,11 @@ namespace :deploy do
   desc <<-DESC
     Clean up old releases. By default, the last 5 releases are kept on each \
     server (though you can change this with the keep_releases variable). All \
-    other deployed revisions are removed from the servers. By default, this \
-    will use sudo to clean up the old releases, but if sudo is not available \
-    for your environment, set the :use_sudo variable to false instead.
+    other deployed revisions are removed from the servers.
   DESC
   task :cleanup, :except => { :no_release => true } do
     count = fetch(:keep_releases, 5).to_i
-    try_sudo "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
+    run "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | xargs rm -rf"
   end
 
   desc <<-DESC
@@ -508,30 +445,16 @@ namespace :deploy do
     Deploys and starts a `cold' application. This is useful if you have not \
     deployed your application before, or if your application is (for some \
     other reason) not currently running. It will deploy the code, run any \
-    pending migrations, and then instead of invoking `deploy:restart', it will \
-    invoke `deploy:start' to fire up the application servers.
+    pending migrations, and then invoke `deploy:restart' to fire up the \
+    application servers.
   DESC
   task :cold do
     update
     migrate
-    start
+    restart
   end
 
-  desc <<-DESC
-    Blank task exists as a hook into which to install your own environment \
-    specific behaviour.
-  DESC
-  task :start, :roles => :app do
-    # Empty Task to overload with your platform specifics
-  end
-
-  desc <<-DESC
-    Blank task exists as a hook into which to install your own environment \
-    specific behaviour.
-  DESC
-  task :stop, :roles => :app do
-    # Empty Task to overload with your platform specifics
-  end
+  after "deploy:restart", "deploy:cleanup"
 
   namespace :pending do
     desc <<-DESC
@@ -554,72 +477,4 @@ namespace :deploy do
     end
   end
 
-  namespace :web do
-    desc <<-DESC
-      Present a maintenance page to visitors. Disables your application's web \
-      interface by writing a "#{maintenance_basename}.html" file to each web server. The \
-      servers must be configured to detect the presence of this file, and if \
-      it is present, always display it instead of performing the request.
-
-      By default, the maintenance page will just say the site is down for \
-      "maintenance", and will be back "shortly", but you can customize the \
-      page by specifying the REASON and UNTIL environment variables:
-
-        $ cap deploy:web:disable \\
-              REASON="hardware upgrade" \\
-              UNTIL="12pm Central Time"
-
-      You can use a different template for the maintenance page by setting the \
-      :maintenance_template_path variable in your deploy.rb file. The template file \
-      should either be a plaintext or an erb file.
-
-      Further customization will require that you write your own task.
-    DESC
-    task :disable, :roles => :web, :except => { :no_release => true } do
-      require 'erb'
-      on_rollback { run "rm -f #{shared_path}/system/#{maintenance_basename}.html" }
-
-      warn <<-EOHTACCESS
-
-        # Please add something like this to your site's Apache htaccess to redirect users to the maintenance page.
-        # More Info: http://www.shiftcommathree.com/articles/make-your-rails-maintenance-page-respond-with-a-503
-
-        ErrorDocument 503 /system/#{maintenance_basename}.html
-        RewriteEngine On
-        RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
-        RewriteCond %{DOCUMENT_ROOT}/system/#{maintenance_basename}.html -f
-        RewriteCond %{SCRIPT_FILENAME} !#{maintenance_basename}.html
-        RewriteRule ^.*$  -  [redirect=503,last]
-
-        # Or if you are using Nginx add this to your server config:
-
-        if (-f $document_root/system/maintenance.html) {
-          return 503;
-        }
-        error_page 503 @maintenance;
-        location @maintenance {
-          rewrite  ^(.*)$  /system/maintenance.html break;
-          break;
-        }
-      EOHTACCESS
-
-      reason = ENV['REASON']
-      deadline = ENV['UNTIL']
-
-      template = File.read(maintenance_template_path)
-      result = ERB.new(template).result(binding)
-
-      put result, "#{shared_path}/system/#{maintenance_basename}.html", :mode => 0644
-    end
-
-    desc <<-DESC
-      Makes the application web-accessible again. Removes the \
-      "#{maintenance_basename}.html" page generated by deploy:web:disable, which (if your \
-      web servers are configured correctly) will make your application \
-      web-accessible again.
-    DESC
-    task :enable, :roles => :web, :except => { :no_release => true } do
-      run "rm -f #{shared_path}/system/#{maintenance_basename}.html"
-    end
-  end
 end

@@ -24,7 +24,6 @@ module Capistrano
         config = instantiate_configuration(options)
         config.debug = options[:debug]
         config.dry_run = options[:dry_run]
-        config.preserve_roles = options[:preserve_roles]
         config.logger.level = options[:verbose]
 
         set_pre_vars(config)
@@ -48,7 +47,6 @@ module Capistrano
       end
 
       def set_pre_vars(config) #:nodoc:
-        config.set :password, options[:password]
         Array(options[:pre_vars]).each { |name, value| config.set(name, value) }
       end
 

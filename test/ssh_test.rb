@@ -4,8 +4,7 @@ require 'capistrano/ssh'
 class SSHTest < Test::Unit::TestCase
   def setup
     Capistrano::ServerDefinition.stubs(:default_user).returns("default-user")
-    @options = { :password => nil,
-                 :auth_methods => %w(publickey hostbased),
+    @options = { :auth_methods => %w(publickey hostbased),
                  :config => false }
     @server = server("capistrano")
     Net::SSH.stubs(:configuration_for).returns({})
@@ -16,29 +15,9 @@ class SSHTest < Test::Unit::TestCase
     assert_equal success, Capistrano::SSH.connect(@server)
   end
 
-  def test_connect_with_bare_server_without_options_with_public_key_failing_should_try_password
-    Net::SSH.expects(:start).with(@server.host, "default-user", @options).raises(Net::SSH::AuthenticationFailed)
-    Net::SSH.expects(:start).with(@server.host, "default-user", @options.merge(:password => "f4b13n", :auth_methods => %w(password keyboard-interactive))).returns(success = Object.new)
-    assert_equal success, Capistrano::SSH.connect(@server, :password => "f4b13n")
-  end
-
-  def test_connect_with_bare_server_without_options_public_key_and_password_failing_should_raise_error
-    Net::SSH.expects(:start).with(@server.host, "default-user", @options).raises(Net::SSH::AuthenticationFailed)
-    Net::SSH.expects(:start).with(@server.host, "default-user", @options.merge(:password => "f4b13n", :auth_methods => %w(password keyboard-interactive))).raises(Net::SSH::AuthenticationFailed)
-    assert_raises(Net::SSH::AuthenticationFailed) do
-      Capistrano::SSH.connect(@server, :password => "f4b13n")
-    end
-  end
-
   def test_connect_with_bare_server_and_user_via_public_key_should_pass_user_to_net_ssh
     Net::SSH.expects(:start).with(@server.host, "jamis", @options).returns(success = Object.new)
     assert_equal success, Capistrano::SSH.connect(@server, :user => "jamis")
-  end
-
-  def test_connect_with_bare_server_and_user_via_password_should_pass_user_to_net_ssh
-    Net::SSH.expects(:start).with(@server.host, "jamis", @options).raises(Net::SSH::AuthenticationFailed)
-    Net::SSH.expects(:start).with(@server.host, "jamis", @options.merge(:password => "f4b13n", :auth_methods => %w(password keyboard-interactive))).returns(success = Object.new)
-    assert_equal success, Capistrano::SSH.connect(@server, :user => "jamis", :password => "f4b13n")
   end
 
   def test_connect_with_bare_server_with_explicit_port_should_pass_port_to_net_ssh

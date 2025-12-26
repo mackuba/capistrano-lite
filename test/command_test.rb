@@ -249,12 +249,12 @@ class CommandTest < Test::Unit::TestCase
 
   def test_hostroles_substitution
     @config = MockConfig.new
-    @config.server "capistrano", :db, :worker
-    server = @config.roles[:db].servers.first
+    @config.server "capistrano"
+    server = @config.server
     channel = {:server => server, :host => 'capistrano'}
     tree = Capistrano::Command::Tree.new(@config) { |t| t.else("echo $CAPISTRANO:HOSTROLES$") }
     result = Capistrano::Command.new(tree, []).send(:replace_placeholders, "echo $CAPISTRANO:HOSTROLES$", channel)
-    assert result == "echo db,worker" || result == "echo worker,db"
+    assert_equal "echo ", result
   end
 
   def test_process_with_unknown_placeholder_should_not_replace_placeholder

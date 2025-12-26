@@ -21,12 +21,11 @@ module Capistrano
   # define roles, and set configuration variables.
   class Configuration
     # The logger instance defined for this configuration.
-    attr_accessor :debug, :logger, :dry_run, :preserve_roles
+    attr_accessor :debug, :logger, :dry_run
 
     def initialize(options={}) #:nodoc:
       @debug = false
       @dry_run = false
-      @preserve_roles = false
       @logger = Logger.new(options)
     end
 
