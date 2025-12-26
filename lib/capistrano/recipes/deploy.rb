@@ -57,13 +57,13 @@ _cset(:shared_path)       { File.join(deploy_to, shared_dir) }
 _cset(:current_path)      { File.join(deploy_to, current_dir) }
 _cset(:release_path)      { File.join(releases_path, release_name) }
 
-_cset(:releases)          { capture("ls -x #{releases_path}", :except => { :no_release => true }).split.sort }
+_cset(:releases)          { capture("ls -x #{releases_path}").split.sort }
 _cset(:current_release)   { releases.length > 0 ? File.join(releases_path, releases.last) : nil }
 _cset(:previous_release)  { releases.length > 1 ? File.join(releases_path, releases[-2]) : nil }
 
-_cset(:current_revision)  { capture("cat #{current_path}/REVISION",     :except => { :no_release => true }).chomp }
-_cset(:latest_revision)   { capture("cat #{current_release}/REVISION",  :except => { :no_release => true }).chomp }
-_cset(:previous_revision) { capture("cat #{previous_release}/REVISION", :except => { :no_release => true }).chomp if previous_release }
+_cset(:current_revision)  { capture("cat #{current_path}/REVISION").chomp }
+_cset(:latest_revision)   { capture("cat #{current_release}/REVISION").chomp }
+_cset(:previous_revision) { capture("cat #{previous_release}/REVISION").chomp if previous_release }
 
 # some tasks, like symlink, need to always point at the latest release, but
 # they can also (occassionally) be called standalone. In the standalone case,
@@ -153,7 +153,7 @@ namespace :deploy do
     It is safe to run this task on servers that have already been set up; it \
     will not destroy any deployed revisions or data.
   DESC
-  task :setup, :except => { :no_release => true } do
+  task :setup do
     dirs = [deploy_to, releases_path, shared_path]
     dirs += shared_children.map { |d| File.join(shared_path, d.split('/').last) }
     run "mkdir -p #{dirs.join(' ')}"
@@ -187,7 +187,7 @@ namespace :deploy do
     :deploy_via variable to the strategy you want to use to deploy (it \
     defaults to :checkout).
   DESC
-  task :update_code, :except => { :no_release => true } do
+  task :update_code do
     on_rollback { run "rm -rf #{release_path}; true" }
     strategy.deploy!
     finalize_update
@@ -209,7 +209,7 @@ namespace :deploy do
     set to true, which is the default. The asset directories can be overridden \
     using the :public_children variable.
   DESC
-  task :finalize_update, :except => { :no_release => true } do
+  task :finalize_update do
     escaped_release = latest_release.to_s.shellescape
     commands = []
     commands << "chmod -R -- g+w #{escaped_release}" if fetch(:group_writable, true)
@@ -242,7 +242,7 @@ namespace :deploy do
   desc <<-DESC
     Deprecated API. This has become deploy:create_symlink, please update your recipes
   DESC
-  task :symlink, :except => { :no_release => true } do
+  task :symlink do
     Kernel.warn "[Deprecation Warning] This API has changed, please hook `deploy:create_symlink` instead of `deploy:symlink`."
     create_symlink
   end
@@ -256,7 +256,7 @@ namespace :deploy do
     deploy, including `restart') or the 'update' task (which does everything \
     except `restart').
   DESC
-  task :create_symlink, :except => { :no_release => true } do
+  task :create_symlink do
     on_rollback do
       if previous_release
         run "rm -f #{current_path}; ln -s #{previous_release} #{current_path}; true"
@@ -286,7 +286,7 @@ namespace :deploy do
 
       $ cap deploy:upload FILES='config/apache/*.conf'
   DESC
-  task :upload, :except => { :no_release => true } do
+  task :upload do
     files = (ENV["FILES"] || "").split(",").map { |f| Dir[f.strip] }.flatten
     abort "Please specify at least one file or directory to update (via the FILES environment variable)" if files.empty?
 
@@ -297,7 +297,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :restart, :except => { :no_release => true } do
+  task :restart do
     # Empty Task to overload with your platform specifics
   end
 
@@ -307,7 +307,7 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely (if
       ever) need to be called directly.
     DESC
-    task :revision, :except => { :no_release => true } do
+    task :revision do
       if previous_release
         run "rm #{current_path}; ln -s #{previous_release} #{current_path}"
       else
@@ -320,7 +320,7 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely
       (if ever) need to be called directly.
     DESC
-    task :cleanup, :except => { :no_release => true } do
+    task :cleanup do
       run "if [ `readlink #{current_path}` != #{current_release} ]; then rm -rf #{current_release}; fi"
     end
 
@@ -330,7 +330,7 @@ namespace :deploy do
       current release will be removed from the servers. You'll generally want \
       to call `rollback' instead, as it performs a `restart' as well.
     DESC
-    task :code, :except => { :no_release => true } do
+    task :code do
       revision
       cleanup
     end
@@ -397,7 +397,7 @@ namespace :deploy do
     server (though you can change this with the keep_releases variable). All \
     other deployed revisions are removed from the servers.
   DESC
-  task :cleanup, :except => { :no_release => true } do
+  task :cleanup do
     count = fetch(:keep_releases, 5).to_i
     run "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | xargs rm -rf"
   end
@@ -414,7 +414,7 @@ namespace :deploy do
       depend :local, :command, "svn"
       depend :remote, :directory, "/u/depot/files"
   DESC
-  task :check, :except => { :no_release => true } do
+  task :check do
     dependencies = strategy.check!
 
     other = fetch(:dependencies, {})
@@ -462,7 +462,7 @@ namespace :deploy do
       to examine what changes are about to be deployed. Note that this might \
       not be supported on all SCM's.
     DESC
-    task :diff, :except => { :no_release => true } do
+    task :diff do
       system(source.local.diff(current_revision))
     end
 
@@ -471,7 +471,7 @@ namespace :deploy do
       of the changes that have occurred since the last deploy. Note that this \
       might not be supported on all SCM's.
     DESC
-    task :default, :except => { :no_release => true } do
+    task :default do
       from = source.next_revision(current_revision)
       system(source.local.log(from))
     end
