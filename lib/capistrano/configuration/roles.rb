@@ -36,24 +36,10 @@ module Capistrano
         @server = host.is_a?(ServerDefinition) ? host : ServerDefinition.new(host, options)
       end
 
-      def role(_name, host=nil, *args, &block)
-        options = args.last.is_a?(Hash) ? args.pop : {}
-        host ||= (block.call if block_given?)
-        server(host, options)
-      end
-
-      def role_names_for_host(host)
-        server && server == host ? [:server] : []
-      end
-
       def resolved_server
         return server if server
         return unless exists?(:server)
         ServerDefinition.new(fetch(:server))
-      end
-
-      def roles
-        server ? { :server => [server] } : {}
       end
     end
   end

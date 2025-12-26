@@ -2,11 +2,8 @@ module Capistrano
   class Configuration
     module Servers
       # Identifies all servers that the given task should be executed on.
-      # The options hash accepts the same arguments as #find_servers, and any
-      # preexisting options there will take precedence over the options in
-      # the task.
-      def find_servers_for_task(task, options={})
-        find_servers(task.options.merge(options))
+      def find_servers_for_task(_task, options={})
+        find_servers(options)
       end
 
       # Attempts to find the configured server. Options are ignored, since only
