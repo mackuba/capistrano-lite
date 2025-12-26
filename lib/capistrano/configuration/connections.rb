@@ -60,12 +60,10 @@ module Capistrano
         @connection_factory ||= DefaultConnectionFactory.new(self)
       end
 
-      # Ensures that there are active sessions for each server in the list.
-      def establish_connections_to(servers)
+      # Ensures that there is an active session for the server.
+      def establish_connection_to(server)
         failed_servers = []
-
-        Array(servers).each { |server| safely_establish_connection_to(server, Thread.current, failed_servers) }
-
+        safely_establish_connection_to(server, Thread.current, failed_servers)
         if failed_servers.any?
           errors = failed_servers.map { |h| "#{h[:server]} (#{h[:error].class}: #{h[:error].message})" }
           error = ConnectionError.new("connection failed for: #{errors.join(', ')}")
@@ -74,39 +72,22 @@ module Capistrano
         end
       end
 
-      # Destroys sessions for each server in the list.
-      def teardown_connections_to(servers)
-        servers.each do |server|
-          begin
-            session = sessions.delete(server)
-            session.close if session
-          rescue IOError, Net::SSH::Disconnect
-            # the TCP connection is already dead
-          end
-        end
-      end
-
-      # Determines the set of servers within the current task's scope
+      # Determines the server within the current task's scope
       def filter_servers(options={})
         if task = current_task
-          servers = find_servers_for_task(task, options)
-
-          if servers.empty?
+          server = find_servers_for_task(task, options)
+          if server.nil?
             raise Capistrano::NoMatchingServersError, "`#{task.fully_qualified_name}' requires a configured server" unless dry_run
-            return [task, []]
-          end
-
-          if task.continue_on_error?
-            servers.delete_if { |s| has_failed?(s) }
+            return [task, nil]
           end
         else
-          servers = find_servers(options)
-          if servers.empty? && !dry_run
+          server = find_servers(options)
+          if server.nil? && !dry_run
             raise Capistrano::NoMatchingServersError, "no server configured"
           end
         end
 
-        [task, servers.compact]
+        [task, server]
       end
 
       # Determines the set of servers within the current task's scope and
@@ -115,25 +96,23 @@ module Capistrano
       def execute_on_servers(options={})
         raise ArgumentError, "expected a block" unless block_given?
 
-        task, servers = filter_servers(options)
-        return if servers.empty?
-        logger.trace "servers: #{servers.map { |s| s.host }.inspect}"
+        task, server = filter_servers(options)
+        return unless server
+        logger.trace "server: #{server.host}"
 
         begin
-          establish_connections_to(servers)
+          establish_connection_to(server)
         rescue ConnectionError => error
           raise error unless task && task.continue_on_error?
-          error.hosts.each do |h|
-            servers.delete(h)
-            failed!(h)
-          end
+          failed!(server)
+          return
         end
 
         begin
-          yield servers
+          yield server
         rescue RemoteError => error
           raise error unless task && task.continue_on_error?
-          error.hosts.each { |h| failed!(h) }
+          failed!(server)
         end
       end
 

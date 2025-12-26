@@ -9,10 +9,11 @@ module Capistrano
       # Attempts to find the configured server. Options are ignored, since only
       # a single server is supported.
       def find_servers(options={})
-        hosts = options[:hosts] || resolved_server
-        hosts = [hosts].flatten.compact
-        return [] if hosts.empty?
-        hosts.map { |host| String === host ? ServerDefinition.new(host) : host }
+        host = options[:hosts] || resolved_server
+        host = host.first if host.is_a?(Array)
+        return nil unless host
+        host = ServerDefinition.new(host) if String === host
+        host
       end
     end
   end

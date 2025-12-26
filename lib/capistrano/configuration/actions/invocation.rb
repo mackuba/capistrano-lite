@@ -138,20 +138,20 @@ module Capistrano
           options = add_default_command_options(options)
 
           if tree.branches.any? || tree.fallback
-            _, servers = filter_servers(options)
-            branches = branches_for_servers(tree,servers)
-            case branches.size
-            when 0
+            _, server = filter_servers(options)
+            branches = server ? tree.branches_for(server) : []
+            branches = Array(branches).compact
+            if branches.empty?
               branches = tree.branches.dup + [tree.fallback]
               branches.compact!
               case branches.size
               when 1
-                logger.debug "no servers for #{branches.first}"
+                logger.debug "no server for #{branches.first}"
               else
-                logger.debug "no servers for commands"
+                logger.debug "no server for commands"
                 branches.each{ |branch| logger.trace "-> #{branch.to_s(true)}" }
               end
-            when 1
+            elsif branches.size == 1
               logger.debug "executing #{branches.first}" unless options[:silent]
             else
               logger.debug "executing multiple commands in parallel"
@@ -169,8 +169,8 @@ module Capistrano
             end
           end
 
-          execute_on_servers(options) do |servers|
-            targets = servers.map { |s| sessions[s] }
+          execute_on_servers(options) do |server|
+            targets = [sessions[server]]
             Command.process(tree, targets, options.merge(:logger => logger))
           end
         end
@@ -290,14 +290,6 @@ module Capistrano
         end
 
         private
-        def branches_for_servers(tree,servers)
-          servers.inject([]) do |branches,server|
-            if server_branches = tree.branches_for(server)
-              branches += server_branches
-            end
-            branches
-          end.compact.uniq
-        end
 
       end
     end
