@@ -80,28 +80,12 @@ _cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates
 # These are helper methods that will be available to your recipes.
 # =========================================================================
 
-# Checks known version control directories to intelligently set the version
-# control in-use. For example, if a .svn directory exists in the project,
-# it will set the :scm variable to :subversion, if a .git directory exists
-# in the project, it will set the :scm variable to :git and so on. If no
-# directory is found, it will default to :git.
+# Checks known version control directories to set the version control in-use.
+# If a .git directory exists in the project, it will set the :scm variable to
+# :git. If no supported directory is found, it will default to :none.
 def scm_default
   if File.exist? '.git'
     :git
-  elsif File.exist? '.accurev'
-    :accurev
-  elsif File.exist? '.bzr'
-    :bzr
-  elsif File.exist? '.cvs'
-    :cvs
-  elsif File.exist? '_darcs'
-    :darcs
-  elsif File.exist? '.hg'
-    :mercurial
-  elsif File.exist? '.perforce'
-    :perforce
-  elsif File.exist? '.svn'
-    :subversion
   else
     :none
   end
@@ -244,9 +228,9 @@ namespace :deploy do
     task (if you want to perform the `restart' task separately).
 
     You will need to make sure you set the :scm variable to the source \
-    control software you are using (it defaults to :subversion), and the \
-    :deploy_via variable to the strategy you want to use to deploy (it \
-    defaults to :checkout).
+    control software you are using (it defaults to :git when a .git directory \
+    is present, and :none otherwise), and the :deploy_via variable to the \
+    strategy you want to use to deploy (it defaults to :checkout).
   DESC
   task :update_code, :except => { :no_release => true } do
     on_rollback { run "rm -rf #{release_path}; true" }

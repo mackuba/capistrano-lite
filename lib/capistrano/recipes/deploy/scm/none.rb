@@ -1,4 +1,5 @@
 require 'capistrano/recipes/deploy/scm/base'
+require 'capistrano/recipes/deploy/local_dependency'
 
 module Capistrano
   module Deploy

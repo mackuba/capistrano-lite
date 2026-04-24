@@ -70,7 +70,7 @@ module Capistrano
       #   load(:file => "recipe"):
       #     same as above
       #
-      #   load(:string => "set :scm, :subversion"):
+      #   load(:string => "set :scm, :git"):
       #     Load the given string as a configuration specification.
       #
       #   load { ... }
