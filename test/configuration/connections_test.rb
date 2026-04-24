@@ -32,12 +32,6 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     @config = MockConfig.new
     @config.stubs(:logger).returns(stub_everything)
     Net::SSH.stubs(:configuration_for).returns({})
-    @ssh_options = {
-      :user        => "user",
-      :port        => 8080,
-      :password    => "g00b3r",
-      :ssh_options => { :debug => :verbose }
-    }
   end
 
   def test_initialize_should_initialize_sessions_and_call_original_initialize
@@ -58,42 +52,6 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     host = server("capistrano")
     Capistrano::SSH.expects(:connect).with(host, @config).returns(:session)
     assert_equal :session, @config.connection_factory.connect_to(host)
-  end
-
-  def test_should_connect_through_gateway_if_gateway_variable_is_set
-    @config.values[:gateway] = "j@gateway"
-    Net::SSH::Gateway.expects(:new).with("gateway", "j", :password => nil, :auth_methods => %w(publickey hostbased), :config => false).returns(stub_everything)
-    assert_instance_of Capistrano::Configuration::Connections::GatewayConnectionFactory, @config.connection_factory
-  end
-
-  def test_connection_factory_as_gateway_should_honor_config_options
-    @config.values[:gateway] = "gateway"
-    @config.values.update(@ssh_options)
-    Net::SSH::Gateway.expects(:new).with("gateway", "user", :debug => :verbose, :port => 8080, :password => nil, :auth_methods => %w(publickey hostbased), :config => false).returns(stub_everything)
-    assert_instance_of Capistrano::Configuration::Connections::GatewayConnectionFactory, @config.connection_factory
-  end
-
-  def test_connection_factory_as_gateway_should_chain_gateways_if_gateway_variable_is_an_array
-    @config.values[:gateway] = ["j@gateway1", "k@gateway2"]
-    gateway1 = mock
-    Net::SSH::Gateway.expects(:new).with("gateway1", "j", :password => nil, :auth_methods => %w(publickey hostbased), :config => false).returns(gateway1)
-    gateway1.expects(:open).returns(65535)
-    Net::SSH::Gateway.expects(:new).with("127.0.0.1", "k", :port => 65535, :password => nil, :auth_methods => %w(publickey hostbased), :config => false).returns(stub_everything)
-    assert_instance_of Capistrano::Configuration::Connections::GatewayConnectionFactory, @config.connection_factory
-  end
-
-  def test_connection_factory_as_gateway_should_reject_gateway_hash
-    @config.values[:gateway] = { "j@gateway" => "capistrano" }
-    assert_raises(ArgumentError) { @config.connection_factory }
-  end
-
-  def test_connection_factory_as_gateway_should_reuse_the_gateway_for_the_single_server
-    @config.values[:gateway] = "j@gateway"
-    Net::SSH::Gateway.expects(:new).once.with("gateway", "j", :password => nil, :auth_methods => %w(publickey hostbased), :config => false).returns(stub_everything)
-    Capistrano::SSH.stubs(:connect).returns(stub_everything)
-    assert_instance_of Capistrano::Configuration::Connections::GatewayConnectionFactory, @config.connection_factory
-    @config.establish_connections_to(server("capistrano"))
-    @config.establish_connections_to(server("capistrano"))
   end
 
   def test_establish_connections_to_should_accept_a_single_server

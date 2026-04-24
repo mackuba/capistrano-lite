@@ -4,12 +4,9 @@
 Status](https://secure.travis-ci.org/capistrano/capistrano.png)](http://travis-ci.org/capistrano/capistrano)[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/capistrano/capistrano)
 
 
-Capistrano is a utility and framework for executing commands on multiple remote
-machines, via SSH. It uses a simple DSL (borrowed in part from
-[Rake](http://rake.rubyforge.org/)) that allows you to define _tasks_, which may
-be applied to machines in certain roles. It also supports tunneling connections
-via some gateway machine to allow operations to be performed behind VPN's and
-firewalls.
+Capistrano is a utility and framework for executing commands on a remote
+machine, via SSH. It uses a simple DSL (borrowed in part from
+[Rake](http://rake.rubyforge.org/)) that allows you to define _tasks_.
 
 Capistrano was originally designed to simplify and automate deployment of web
 applications to distributed environments, and originally came bundled with a set
@@ -24,7 +21,6 @@ of tasks designed for deploying Rails applications.
 * [Net::SSH](http://net-ssh.rubyforge.org)
 * [Net::SFTP](http://net-ssh.rubyforge.org)
 * [Net::SCP](http://net-ssh.rubyforge.org)
-* [Net::SSH::Gateway](http://net-ssh.rubyforge.org)
 * [HighLine](http://highline.rubyforge.org)
 * [Ruby](http://www.ruby-lang.org/en/) &#x2265; 1.8.7
 

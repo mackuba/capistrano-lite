@@ -1,4 +1,3 @@
-require 'net/ssh/gateway'
 require 'capistrano/ssh'
 require 'capistrano/errors'
 
@@ -17,38 +16,6 @@ module Capistrano
 
         def connect_to(server)
           SSH.connect(server, @options)
-        end
-      end
-
-      class GatewayConnectionFactory #:nodoc:
-        def initialize(gateway, options)
-          @options = options
-          raise ArgumentError, "gateway must be a host string or gateway chain" if gateway.is_a?(Hash)
-
-          @options[:logger].debug "Creating gateway using #{[*gateway].join(', ')}" if @options[:logger]
-          @gateway = add_gateway(gateway)
-        end
-
-        def add_gateway(gateway)
-          gateways = [*gateway].collect { |g| ServerDefinition.new(g) }
-          tunnel = SSH.connection_strategy(gateways[0], @options) do |host, user, connect_options|
-            Net::SSH::Gateway.new(host, user, connect_options)
-          end
-          (gateways[1..-1]).inject(tunnel) do |tunnel, destination|
-            @options[:logger].debug "Creating tunnel to #{destination}" if @options[:logger]
-            local_host = ServerDefinition.new("127.0.0.1", :user => destination.user, :port => tunnel.open(destination.host, (destination.port || 22)))
-            SSH.connection_strategy(local_host, @options) do |host, user, connect_options|
-              Net::SSH::Gateway.new(host, user, connect_options)
-            end
-          end
-        end
-
-        def connect_to(server)
-          @options[:logger].debug "establishing connection to `#{server}' via gateway" if @options[:logger]
-          local_host = ServerDefinition.new("127.0.0.1", :user => server.user, :port => @gateway.open(server.host, server.port || 22))
-          session = SSH.connect(local_host, @options)
-          session.xserver = server
-          session
         end
       end
 
@@ -89,14 +56,7 @@ module Capistrano
       # The factory will respond to #connect_to, which can be used to
       # establish a connection to a server defined via a ServerDefinition object.
       def connection_factory
-        @connection_factory ||= begin
-          if exists?(:gateway) && !fetch(:gateway).nil? && !fetch(:gateway).empty?
-            logger.debug "establishing connection to gateway `#{fetch(:gateway).inspect}'"
-            GatewayConnectionFactory.new(fetch(:gateway), self)
-          else
-            DefaultConnectionFactory.new(self)
-          end
-        end
+        @connection_factory ||= DefaultConnectionFactory.new(self)
       end
 
       # Ensures that there is an active session for the server.
