@@ -124,12 +124,6 @@ class DeploySCMGitTest < Test::Unit::TestCase
     end
   end
 
-  def test_command_should_be_backwards_compatible
-    # 1.x version of this module used ":git", not ":scm_command"
-    @config[:git] = "/srv/bin/git"
-    assert_equal "/srv/bin/git", @source.command
-  end
-
   def test_sync
     dest = "/var/www"
     rev = 'c2d9e79'
@@ -271,4 +265,3 @@ class DeploySCMGitTest < Test::Unit::TestCase
       { :channel => { :host => "abc" } }
     end
 end
-

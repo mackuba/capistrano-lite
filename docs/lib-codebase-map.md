@@ -43,7 +43,6 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/fix_rake_deprecated_dsl.rb` | none | Workaround for old Rake deprecated object DSL pollution by undefining methods on `Rake::DeprecatedObjectDSL` if present. | Loaded by root entry point |
 | `lib/capistrano/logger.rb` | `Capistrano::Logger` | Level-based logger with TTY color/style formatters, timestamp/prepend/append/replace support, and default formatter registration. | Used by `Configuration`, CLI options, command/transfer/strategy/scm code |
 | `lib/capistrano/processable.rb` | `Capistrano::Processable`, `Processable::SessionAssociation` | Shared Net::SSH event loop helper. Preprocesses/postprocesses sessions with `IO.select`, associates raised errors with sessions. | Included by `Command`, `Transfer`, `Shell` |
-| `lib/capistrano/recipes/compat.rb` | recipe tasks only | Compatibility recipe mapping Capistrano 1.x task names to Capistrano 2 deploy tasks, with warnings. | Loads `deploy`; uses `find_and_execute_task`, `deploy` namespace |
 | `lib/capistrano/recipes/deploy.rb` | recipe methods and tasks only | Primary deployment recipe. Defines deploy variables, helpers (`scm_default`, `depend`, `with_env`, `run_locally`, `try_sudo`, `try_runner`), and tasks for setup, update, update_code, symlinks, upload, rollback, migrations, cleanup, checks, cold deploy, start/stop, pending diff/log, and web maintenance mode. Defaults to Git when `.git` exists and `none` otherwise. | `deploy/scm`, `deploy/strategy`, `dependencies`, `Command`/`Transfer` through configuration actions |
 | `lib/capistrano/recipes/deploy/assets.rb` | recipe methods and tasks only | Rails asset-pipeline extension. Hooks into deploy lifecycle to symlink shared assets, precompile, maintain manifest mtimes, clean expired assets, clean all assets, and roll back manifests. | Loads `deploy`; `json`, `yaml` via deploy, `Set` via deploy, `String#compact`, callbacks/tasks/actions |
 | `lib/capistrano/recipes/deploy/dependencies.rb` | `Capistrano::Deploy::Dependencies` | Aggregates local and remote dependency checks and reports pass/fail. | `local_dependency`, `remote_dependency` |
@@ -113,7 +112,6 @@ flowchart TD
   deploy_recipe --> strategy_factory["Deploy::Strategy factory"]
   deploy_recipe --> config
   assets_recipe["recipes/deploy/assets.rb"] --> deploy_recipe
-  compat_recipe["recipes/compat.rb"] --> deploy_recipe
 
   scm_factory --> scm_base["SCM::Base"]
   scm_base --> scm_adapters["Git, None"]
@@ -146,7 +144,6 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/configuration/execution.rb` | `capistrano/errors` |
 | `lib/capistrano/configuration/namespaces.rb` | `capistrano/task_definition` |
 | `lib/capistrano/configuration/servers.rb` | `capistrano/server_definition`, `capistrano/errors` |
-| `lib/capistrano/recipes/compat.rb` | `load 'deploy'` |
 | `lib/capistrano/recipes/deploy.rb` | `capistrano/recipes/deploy/scm`, `capistrano/recipes/deploy/strategy` |
 | `lib/capistrano/recipes/deploy/assets.rb` | `load 'deploy'` unless `_cset` already exists |
 | `lib/capistrano/recipes/deploy/dependencies.rb` | `capistrano/recipes/deploy/local_dependency`, `capistrano/recipes/deploy/remote_dependency` |
