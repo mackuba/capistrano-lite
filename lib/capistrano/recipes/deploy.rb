@@ -25,7 +25,7 @@ _cset(:repository)  { abort "Please specify the repository that houses your appl
 # =========================================================================
 
 _cset(:scm) { scm_default }
-_cset :deploy_via, :checkout
+_cset :deploy_via, :remote_cache
 
 _cset(:deploy_to) { "/u/apps/#{application}" }
 _cset(:revision)  { source.head }
@@ -230,7 +230,7 @@ namespace :deploy do
     You will need to make sure you set the :scm variable to the source \
     control software you are using (it defaults to :git when a .git directory \
     is present, and :none otherwise), and the :deploy_via variable to the \
-    strategy you want to use to deploy (it defaults to :checkout).
+    strategy you want to use to deploy (it defaults to :remote_cache).
   DESC
   task :update_code do
     on_rollback { run "rm -rf #{release_path}; true" }

@@ -92,11 +92,6 @@ module Capistrano
       #
       #   set :git_shallow_clone, 1
       #
-      # For those that don't like to leave your entire repository on
-      # your production server you can:
-      #
-      #   set :deploy_via, :export
-      #
       # To deploy from a local repository:
       #
       #   set :repository, "file://."
@@ -296,4 +291,3 @@ module Capistrano
     end
   end
 end
-

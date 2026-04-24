@@ -55,12 +55,9 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/recipes/deploy/scm/none.rb` | `Capistrano::Deploy::SCM::None` | Non-SCM adapter for copying a local directory. Intended for `deploy_via :copy`; no real history support. | `scm/base` |
 | `lib/capistrano/recipes/deploy/strategy.rb` | `Capistrano::Deploy::Strategy` | Factory module for dynamic deploy strategy loading by name. | Dynamic requires `deploy/strategy/<name>`; raises `Capistrano::Error` |
 | `lib/capistrano/recipes/deploy/strategy/base.rb` | `Capistrano::Deploy::Strategy::Base` | Abstract deployment strategy API. Provides deploy check defaults, configuration method delegation, local `system` logging, and real revision access. | `deploy/dependencies`, `logger`, `Configuration` DSL |
-| `lib/capistrano/recipes/deploy/strategy/checkout.rb` | `Capistrano::Deploy::Strategy::Checkout` | Remote strategy that checks out the selected SCM revision directly into `release_path`. | `strategy/remote`, `SCM#checkout` |
 | `lib/capistrano/recipes/deploy/strategy/copy.rb` | `Capistrano::Deploy::Strategy::Copy`, `Copy::Compression` | Local-copy strategy. Checks out/export locally or refreshes a local cache, optionally builds, excludes files, archives, uploads, extracts remotely, and cleans staging artifacts. | `strategy/base`, `fileutils`, `tempfile`, `LocalDependency`, `FileTransfer#upload`, SCM local proxy |
-| `lib/capistrano/recipes/deploy/strategy/export.rb` | `Capistrano::Deploy::Strategy::Export` | Remote strategy that exports the selected SCM revision directly into `release_path`. | `strategy/remote`, `SCM#export` |
 | `lib/capistrano/recipes/deploy/strategy/remote.rb` | `Capistrano::Deploy::Strategy::Remote` | Base for strategies that run SCM commands on remote hosts. Runs SCM commands with prompt handling and writes `REVISION`. | `strategy/base`, `Command` via `run`, SCM `handle_data` |
 | `lib/capistrano/recipes/deploy/strategy/remote_cache.rb` | `Capistrano::Deploy::Strategy::RemoteCache` | Remote strategy maintaining a shared cached checkout under `shared_path`, then copying/rsyncing it to each release. | `strategy/remote`, SCM `sync`/`checkout`, remote `rsync` when exclusions exist |
-| `lib/capistrano/recipes/deploy/strategy/unshared_remote_cache.rb` | `Capistrano::Deploy::Strategy::UnsharedRemoteCache` | Variant of `RemoteCache` where `repository_cache` is taken directly from configuration rather than under `shared_path`. | `strategy/remote_cache` |
 | `lib/capistrano/recipes/standard.rb` | recipe tasks only | Standard recipe loaded by CLI. Defines `invoke` for one-off remote commands. | `configuration/actions/invocation` |
 | `lib/capistrano/recipes/templates/maintenance.rhtml` | none | ERB/XHTML maintenance-page template used by `deploy:web:disable`. | Read by `recipes/deploy.rb` |
 | `lib/capistrano/server_definition.rb` | `Capistrano::ServerDefinition` | Parses and stores `user@host:port` plus server options. Provides comparison, equality/hash, default user, and string rendering. | Used by `Servers`, `SSH`, `Connections` |
@@ -124,7 +121,7 @@ flowchart TD
   strategy_base --> dependencies["Deploy::Dependencies"]
   dependencies --> local_dep["LocalDependency"]
   dependencies --> remote_dep["RemoteDependency"]
-  strategy_base --> strategies["Checkout, Export, Copy, RemoteCache, UnsharedRemoteCache"]
+  strategy_base --> strategies["Copy, RemoteCache"]
   strategies --> scm_adapters
   strategies --> config
 ```
@@ -159,10 +156,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/recipes/deploy/strategy.rb` | dynamically `capistrano/recipes/deploy/strategy/<name>` |
 | `lib/capistrano/recipes/deploy/strategy/base.rb` | `capistrano/recipes/deploy/dependencies` |
 | `lib/capistrano/recipes/deploy/strategy/remote.rb` | `capistrano/recipes/deploy/strategy/base` |
-| `lib/capistrano/recipes/deploy/strategy/checkout.rb` | `capistrano/recipes/deploy/strategy/remote` |
-| `lib/capistrano/recipes/deploy/strategy/export.rb` | `capistrano/recipes/deploy/strategy/remote` |
 | `lib/capistrano/recipes/deploy/strategy/remote_cache.rb` | `capistrano/recipes/deploy/strategy/remote` |
-| `lib/capistrano/recipes/deploy/strategy/unshared_remote_cache.rb` | `capistrano/recipes/deploy/strategy/remote_cache` |
 | `lib/capistrano/recipes/deploy/strategy/copy.rb` | `capistrano/recipes/deploy/strategy/base` |
 | `lib/capistrano/task_definition.rb` | `capistrano/server_definition` |
 | `lib/capistrano/transfer.rb` | `capistrano/processable` |

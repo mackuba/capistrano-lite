@@ -124,6 +124,6 @@
   <rect x="1020" y="651" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
   <text x="1150" y="680" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Deploy::Dependencies</text>
   <rect x="1020" y="771" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
-  <text x="1150" y="800" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Checkout, Export, Copy, RemoteCache</text>
+  <text x="1150" y="800" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Copy, RemoteCache</text>
 </g>
 </svg>
