@@ -38,7 +38,6 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/configuration/servers.rb` | `Capistrano::Configuration::Servers` | Adds the host-only `server` DSL and finds matching servers for a task or arbitrary filters. Applies `HOSTS`, `HOSTFILTER`, `:only`, and `:except`. | `ServerDefinition` |
 | `lib/capistrano/configuration/variables.rb` | `Capistrano::Configuration::Variables` | Thread-safe configuration variables with lazy proc evaluation, reset/unset, `fetch`, `[]`, and variable-backed `method_missing`. | `thread`; used by nearly every DSL and recipe file |
 | `lib/capistrano/errors.rb` | `Capistrano::Error`, `CaptureError`, `NoSuchTaskError`, `NoMatchingServersError`, `RemoteError`, `ConnectionError`, `TransferError`, `CommandError`, `LocalArgumentError` | Shared exception hierarchy. Remote errors carry affected hosts. | Used by command, transfer, connections, execution, recipes, deploy adapters |
-| `lib/capistrano/ext/multistage.rb` | none directly; loads tasks into current configuration | Extension recipe for stage selection. Defines stage tasks from `config/deploy/*.rb`, default-stage behavior, `multistage:ensure`, and `multistage:prepare`. | `fileutils`, `Configuration.instance`, `Loading`, `Variables`, `Namespaces`, `Callbacks` |
 | `lib/capistrano/ext/string.rb` | reopens `String` | Adds `String#compact`, collapsing whitespace. Used to make heredoc shell commands one line. | Used by deploy assets and recipe command heredocs |
 | `lib/capistrano/extensions.rb` | `Capistrano::ExtensionProxy`, `Capistrano::EXTENSIONS`, plugin methods | Plugin registration system. Adds proxy methods to `Configuration` instances and delegates unknown plugin method calls back to the configuration. | `Configuration`, `Error` |
 | `lib/capistrano/fix_rake_deprecated_dsl.rb` | none | Workaround for old Rake deprecated object DSL pollution by undefining methods on `Rake::DeprecatedObjectDSL` if present. | Loaded by root entry point |
@@ -150,7 +149,6 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/configuration/execution.rb` | `capistrano/errors` |
 | `lib/capistrano/configuration/namespaces.rb` | `capistrano/task_definition` |
 | `lib/capistrano/configuration/servers.rb` | `capistrano/server_definition` |
-| `lib/capistrano/ext/multistage.rb` | expects `Capistrano::Configuration` already loaded |
 | `lib/capistrano/recipes/compat.rb` | `load 'deploy'` |
 | `lib/capistrano/recipes/deploy.rb` | `capistrano/recipes/deploy/scm`, `capistrano/recipes/deploy/strategy` |
 | `lib/capistrano/recipes/deploy/assets.rb` | `load 'deploy'` unless `_cset` already exists |

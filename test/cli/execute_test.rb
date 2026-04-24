@@ -36,9 +36,9 @@ class CLIExecuteTest < Test::Unit::TestCase
 
   def test_execute_should_set_prevars_before_loading
     @config.expects(:load).never
-    @config.expects(:set).with(:stage, "foobar")
+    @config.expects(:set).with(:environment, "foobar")
     @config.expects(:load).with("standard")
-    @cli.options[:pre_vars] = { :stage => "foobar" }
+    @cli.options[:pre_vars] = { :environment => "foobar" }
     @cli.execute!
   end
 
