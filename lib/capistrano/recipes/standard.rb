@@ -19,18 +19,3 @@ task :invoke do
   method = ENV["SUDO"] ? :sudo : :run
   invoke_command(command, :via => method)
 end
-
-desc <<-DESC
-  Begin an interactive Capistrano session. This gives you an interactive \
-  terminal from which to execute tasks and commands on all of your servers. \
-  (This is still an experimental feature, and is subject to change without \
-  notice!)
-
-  Sample usage:
-
-    $ cap shell
-DESC
-task :shell do
-  require 'capistrano/shell'
-  Capistrano::Shell.run(self)
-end

@@ -62,10 +62,9 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/recipes/deploy/strategy/remote.rb` | `Capistrano::Deploy::Strategy::Remote` | Base for strategies that run SCM commands on remote hosts. Runs SCM commands with prompt handling and writes `REVISION`. | `strategy/base`, `Command` via `run`, SCM `handle_data` |
 | `lib/capistrano/recipes/deploy/strategy/remote_cache.rb` | `Capistrano::Deploy::Strategy::RemoteCache` | Remote strategy maintaining a shared cached checkout under `shared_path`, then copying/rsyncing it to each release. | `strategy/remote`, SCM `sync`/`checkout`, remote `rsync` when exclusions exist |
 | `lib/capistrano/recipes/deploy/strategy/unshared_remote_cache.rb` | `Capistrano::Deploy::Strategy::UnsharedRemoteCache` | Variant of `RemoteCache` where `repository_cache` is taken directly from configuration rather than under `shared_path`. | `strategy/remote_cache` |
-| `lib/capistrano/recipes/standard.rb` | recipe tasks only | Standard recipe loaded by CLI. Defines `invoke` for one-off remote commands and `shell` for the interactive Capistrano shell. | `configuration/actions/invocation`, `capistrano/shell` |
+| `lib/capistrano/recipes/standard.rb` | recipe tasks only | Standard recipe loaded by CLI. Defines `invoke` for one-off remote commands. | `configuration/actions/invocation` |
 | `lib/capistrano/recipes/templates/maintenance.rhtml` | none | ERB/XHTML maintenance-page template used by `deploy:web:disable`. | Read by `recipes/deploy.rb` |
 | `lib/capistrano/server_definition.rb` | `Capistrano::ServerDefinition` | Parses and stores `user@host:port` plus server options. Provides comparison, equality/hash, default user, and string rendering. | Used by `Servers`, `SSH`, `Connections` |
-| `lib/capistrano/shell.rb` | `Capistrano::Shell`, `Shell::ReadlineFallback` | Interactive REPL behind the `shell` task. Reads user commands, scopes by hosts, executes tasks or commands, and runs a background SSH event loop. | `processable`, `Configuration`, `Command`, `Logger`, task/errors |
 | `lib/capistrano/ssh.rb` | `Capistrano::SSH`, `SSH::Server` | SSH connection helper. Applies the originating `ServerDefinition` to Net::SSH sessions and implements public-key-first then password fallback connection strategy. | `net/ssh`, `ServerDefinition` |
 | `lib/capistrano/task_definition.rb` | `Capistrano::TaskDefinition` | Stores task metadata: name, namespace, options, body, description, rollback behavior, and max host count. Formats descriptions and computes fully qualified names. | `server_definition`; used by `configuration/namespaces` and `execution` |
 | `lib/capistrano/transfer.rb` | `Capistrano::Transfer`, `Transfer::SFTPTransferWrapper` | Parallel upload/download engine over SFTP or SCP. Normalizes per-host paths/IOs, tracks failures per transfer, delegates event processing to `Processable`, and raises `TransferError`. | `net/scp`, `net/sftp`, `processable`, `errors`, SSH sessions |
@@ -110,9 +109,6 @@ flowchart TD
   transfer_actions --> transfer["Transfer"]
   command --> processable["Processable"]
   transfer --> processable
-  shell["Shell"] --> processable
-  shell --> command
-
   callbacks --> callback_classes["Callback / ProcCallback / TaskCallback"]
   execution --> callbacks
   execution --> namespaces
@@ -121,7 +117,6 @@ flowchart TD
   deploy_recipe --> strategy_factory["Deploy::Strategy factory"]
   deploy_recipe --> config
   assets_recipe["recipes/deploy/assets.rb"] --> deploy_recipe
-  standard_recipe["recipes/standard.rb"] --> shell
   compat_recipe["recipes/compat.rb"] --> deploy_recipe
 
   scm_factory --> scm_base["SCM::Base"]
@@ -171,8 +166,6 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/recipes/deploy/strategy/remote_cache.rb` | `capistrano/recipes/deploy/strategy/remote` |
 | `lib/capistrano/recipes/deploy/strategy/unshared_remote_cache.rb` | `capistrano/recipes/deploy/strategy/remote_cache` |
 | `lib/capistrano/recipes/deploy/strategy/copy.rb` | `capistrano/recipes/deploy/strategy/base` |
-| `lib/capistrano/recipes/standard.rb` | dynamically `capistrano/shell` when `shell` task runs |
-| `lib/capistrano/shell.rb` | `capistrano/processable` |
 | `lib/capistrano/task_definition.rb` | `capistrano/server_definition` |
 | `lib/capistrano/transfer.rb` | `capistrano/processable` |
 
