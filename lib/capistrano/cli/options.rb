@@ -207,15 +207,11 @@ module Capistrano
       end
 
       def sysconf_directory #:nodoc:
-        # TODO if anyone cares, feel free to submit a patch that uses a more
-        # appropriate location for this file in Windows.
-        ENV["SystemRoot"] || '/etc'
+        '/etc'
       end
 
       def home_directory #:nodoc:
-        ENV["HOME"] ||
-          (ENV["HOMEPATH"] && "#{ENV["HOMEDRIVE"]}#{ENV["HOMEPATH"]}") ||
-          "/"
+        ENV["HOME"] || "/"
       end
 
       def coerce_variable_types!

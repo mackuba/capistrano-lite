@@ -16,20 +16,11 @@ class DeploySCMNoneTest < Test::Unit::TestCase
     assert true
   end
 
-  def test_checkout_on_linux
-    Capistrano::Deploy::LocalDependency.stubs(:on_windows?).returns(false)
+  def test_checkout
     @config[:repository] = '.'
     rev = ''
     dest = '/var/www'
     assert_equal "cp -R . /var/www", @source.checkout(rev, dest)
-  end
-
-  def test_checkout_on_windows
-    Capistrano::Deploy::LocalDependency.stubs(:on_windows?).returns(true)
-    @config[:repository] = '.'
-    rev = ''
-    dest = 'c:/Documents and settings/admin/tmp'
-    assert_equal "xcopy . \"c:/Documents and settings/admin/tmp\" /S/I/Y/Q/E", @source.checkout(rev, dest)
   end
 
 end

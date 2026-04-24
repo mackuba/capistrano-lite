@@ -1,5 +1,4 @@
 require 'capistrano/recipes/deploy/scm/base'
-require 'capistrano/recipes/deploy/local_dependency'
 
 module Capistrano
   module Deploy
@@ -33,7 +32,7 @@ module Capistrano
         # Simply does a copy from the :repository directory to the
         # :destination directory.
         def checkout(revision, destination)
-          !Capistrano::Deploy::LocalDependency.on_windows? ? "cp -R#{configuration[:copy_dereference_symlink]?'L':''} #{repository} #{destination}" : "xcopy #{repository} \"#{destination}\" /S/I/Y/Q/E"
+          "cp -R#{configuration[:copy_dereference_symlink]?'L':''} #{repository} #{destination}"
         end
         alias_method :export, :checkout
 
