@@ -15,9 +15,7 @@ module Capistrano
       attr_accessor :xserver
     end
 
-    # An abstraction to make it possible to connect to the server via public key
-    # without prompting for the password. If the public key authentication fails
-    # this will fall back to password authentication.
+    # An abstraction to make it possible to connect to the server via public key.
     #
     # +server+ must be an instance of ServerDefinition.
     #
@@ -35,18 +33,11 @@ module Capistrano
       end
     end
 
-    # Abstracts the logic for establishing an SSH connection (which includes
-    # testing for connection failures and retrying with a password, and so forth,
-    # mostly made complicated because of the fact that some of these variables
-    # might be lazily evaluated and try to do something like prompt the user,
-    # which should only happen when absolutely necessary.
+    # Abstracts the logic for establishing an SSH connection.
     #
     # This will yield the hostname, username, and a hash of connection options
     # to the given block, which should return a new connection.
     def self.connection_strategy(server, options={}, &block)
-      methods = [ %w(publickey hostbased), %w(password keyboard-interactive) ]
-      password_value = nil
-
       # construct the hash of ssh options that should be passed more-or-less
       # directly to Net::SSH. This will be the general ssh options, merged with
       # the server-specific ssh-options.
@@ -76,18 +67,8 @@ module Capistrano
       ssh_options.delete(:username)
       ssh_options.delete(:user)
 
-      begin
-        connection_options = ssh_options.merge(
-          :password => password_value,
-          :auth_methods => ssh_options[:auth_methods] || methods.shift
-        )
-
-        yield host, user, connection_options
-      rescue Net::SSH::AuthenticationFailed
-        raise if methods.empty? || ssh_options[:auth_methods]
-        password_value = options[:password]
-        retry
-      end
+      connection_options = ssh_options.merge(:auth_methods => %w(publickey))
+      yield host, user, connection_options
     end
   end
 end

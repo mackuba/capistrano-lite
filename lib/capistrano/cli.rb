@@ -27,7 +27,7 @@ module Capistrano
     #   require 'capistrano/cli'
     #   config = Capistrano::Configuration.new
     #   config.logger.level = Capistrano::Logger::TRACE
-    #   config.set(:password) { Capistrano::CLI.password_prompt }
+    #   config.set(:password) { Capistrano::CLI.password_prompt } # sudo password
     #   config.load "config/deploy"
     #   config.update_code
     #

@@ -72,7 +72,7 @@ module Capistrano
           ) { |value| options[:dry_run] = true }
 
           opts.on("-p", "--password",
-            "Immediately prompt for the password."
+            "Immediately prompt for the sudo password."
           ) { options[:password] = nil }
 
           opts.on("-q", "--quiet",

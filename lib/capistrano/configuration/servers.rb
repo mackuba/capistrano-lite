@@ -33,7 +33,7 @@ module Capistrano
 
       # Returns the single configured server. If the HOST environment variable
       # is set, it replaces the configured host name while preserving configured
-      # connection options such as user, port, password, and SSH options.
+      # connection options such as user, port, and SSH options.
       def find_servers(options={})
         [active_server]
       end

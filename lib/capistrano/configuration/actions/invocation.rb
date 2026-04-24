@@ -99,8 +99,8 @@ module Capistrano
         #   run "#{sudo :as => 'bob'} mkdir /path/to/dir"
         #
         # It can also be invoked like #run, but executing the command via sudo.
-        # This assumes that the sudo password (if required) is the same as the
-        # password for logging in to the server.
+        # If sudo requires a password, set the <tt>:password</tt> variable or
+        # pass <tt>-p</tt> to prompt for it before running.
         #
         #   sudo "mkdir /path/to/dir"
         #
