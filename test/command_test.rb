@@ -242,19 +242,6 @@ class CommandTest < Test::Unit::TestCase
     open_test_channel("echo $CAPISTRANO:HOST$", session)
   end
 
-  class MockConfig
-    include Capistrano::Configuration::Roles
-  end
-
-  def test_hostroles_substitution
-    @config = MockConfig.new
-    @config.server "capistrano", :db, :worker
-    server = @config.roles[:db].servers.first
-    channel = {:server => server, :host => 'capistrano'}
-    result = Capistrano::Command.new("echo $CAPISTRANO:HOSTROLES$", [], :configuration => @config).send(:replace_placeholders, "echo $CAPISTRANO:HOSTROLES$", channel)
-    assert result == "echo db,worker" || result == "echo worker,db"
-  end
-
   def test_process_with_unknown_placeholder_should_not_replace_placeholder
     session = setup_for_extracting_channel_action do |ch|
       ch.expects(:exec).with(%(sh -c 'echo $CAPISTRANO:OTHER$'))

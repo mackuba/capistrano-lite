@@ -48,12 +48,9 @@ module Capistrano
         # * :hosts - this is either a string (for a single target host) or an array
         #   of strings, indicating which hosts the command should run on. By default,
         #   the hosts are determined from the task definition.
-        # * :roles - this is either a string or symbol (for a single target role) or
-        #   an array of strings or symbols, indicating which roles the command should
-        #   run on. If :hosts is specified, :roles will be ignored.
         # * :only - specifies a condition limiting which hosts will be selected to
-        #   run the command. This should refer to values set in the role definition.
-        #   For example, if a role is defined with :primary => true, then you could
+        #   run the command. This should refer to values set in the server definition.
+        #   For example, if a server is defined with :primary => true, then you could
         #   select only hosts with :primary true by setting :only => { :primary => true }.
         # * :except - specifies a condition limiting which hosts will be selected to
         #   run the command. This is the inverse of :only (hosts that do _not_ match

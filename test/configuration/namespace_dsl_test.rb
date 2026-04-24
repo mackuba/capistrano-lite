@@ -119,14 +119,6 @@ class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
     @config.original
   end
 
-  def test_role_inside_namespace_should_raise_error
-    assert_raises(NotImplementedError) do
-      @config.namespace(:outer) do
-        role :app, "hello"
-      end
-    end
-  end
-
   def test_name_for_top_level_should_be_nil
     assert_nil @config.name
   end

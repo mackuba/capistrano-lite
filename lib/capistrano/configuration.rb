@@ -7,7 +7,6 @@ require 'capistrano/configuration/execution'
 require 'capistrano/configuration/loading'
 require 'capistrano/configuration/log_formatters'
 require 'capistrano/configuration/namespaces'
-require 'capistrano/configuration/roles'
 require 'capistrano/configuration/servers'
 require 'capistrano/configuration/variables'
 
@@ -18,15 +17,14 @@ require 'capistrano/configuration/actions/invocation'
 module Capistrano
   # Represents a specific Capistrano configuration. A Configuration instance
   # may be used to load multiple recipe files, define and describe tasks,
-  # define roles, and set configuration variables.
+  # define servers, and set configuration variables.
   class Configuration
     # The logger instance defined for this configuration.
-    attr_accessor :debug, :logger, :dry_run, :preserve_roles
+    attr_accessor :debug, :logger, :dry_run
 
     def initialize(options={}) #:nodoc:
       @debug = false
       @dry_run = false
-      @preserve_roles = false
       @logger = Logger.new(options)
     end
 
@@ -35,7 +33,7 @@ module Capistrano
 
     # The includes must come at the bottom, since they may redefine methods
     # defined in the base class.
-    include AliasTask, Connections, Execution, Loading, LogFormatters, Namespaces, Roles, Servers, Variables
+    include AliasTask, Connections, Execution, Loading, LogFormatters, Namespaces, Servers, Variables
 
     # Mix in the actions
     include Actions::FileTransfer, Actions::Inspect, Actions::Invocation

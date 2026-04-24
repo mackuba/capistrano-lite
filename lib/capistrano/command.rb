@@ -158,10 +158,7 @@ module Capistrano
       end
 
       def replace_placeholders(command, channel)
-        roles = options[:configuration] && options[:configuration].role_names_for_host(channel[:server])
-        command = command.gsub(/\$CAPISTRANO:HOST\$/, channel[:host])
-        command.gsub!(/\$CAPISTRANO:HOSTROLES\$/, roles.join(',')) if roles
-        command
+        command.gsub(/\$CAPISTRANO:HOST\$/, channel[:host])
       end
 
       # prepare a space-separated sequence of variables assignments

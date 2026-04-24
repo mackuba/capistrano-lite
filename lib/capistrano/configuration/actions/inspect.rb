@@ -16,7 +16,7 @@ module Capistrano
         # Usage:
         #
         #   desc "Run a tail on multiple log files at the same time"
-        #   task :tail_fcgi, :roles => :app do
+        #   task :tail_fcgi do
         #     stream "tail -f #{shared_path}/log/fastcgi.crash.log"
         #   end
         def stream(command, options={})

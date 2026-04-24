@@ -117,12 +117,6 @@ INTRO
 
    cap> on app1.foo.com,app2.foo.com echo ping
 
-"Nice, but can I specify the servers by role?"
--> You sure can. Just use the `with' keyword, followed by the
-   comma-delimited list of role names:
-
-   cap> with app,db echo ping
-
 "Can I execute a Capistrano task from within this shell?"
 -> Yup. Just prefix the task with an exclamation mark:
 
@@ -235,13 +229,12 @@ HELP
         end
       end
 
-      # Process a command. Interprets the scope_type (must be nil, "with", or
-      # "on") and the command. If no command is given, then the scope is made
+      # Process a command. Interprets the scope_type (must be nil or "on") and
+      # the command. If no command is given, then the scope is made
       # effective for all subsequent commands. If the scope value is "all",
       # then the scope is unrestricted.
       def process_command(scope_type, scope_value, command)
         env_var = case scope_type
-            when "with" then "ROLES"
             when "on"   then "HOSTS"
           end
 

@@ -80,7 +80,7 @@ class AliasTaskTest < Test::Unit::TestCase
   end
 
   def test_convert_task_names_using_to_str
-    @config.task(:foo, :role => :app) { 42 }
+    @config.task(:foo) { 42 }
 
     @config.alias_task 'one', 'foo'
     @config.alias_task :two, 'foo'
@@ -94,7 +94,7 @@ class AliasTaskTest < Test::Unit::TestCase
   end
 
   def test_raise_an_exception_when_task_names_can_not_be_converted
-    @config.task(:foo, :role => :app) { 42 }
+    @config.task(:foo) { 42 }
 
     assert_raises(ArgumentError) { @config.alias_task mock('x'), :foo }
   end

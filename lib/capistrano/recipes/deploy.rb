@@ -342,7 +342,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :restart, :roles => :app, :except => { :no_release => true } do
+  task :restart, :except => { :no_release => true } do
     # Empty Task to overload with your platform specifics
   end
 
@@ -407,7 +407,7 @@ namespace :deploy do
       set :migrate_env,    ""
       set :migrate_target, :latest
   DESC
-  task :migrate, :roles => :db, :only => { :primary => true } do
+  task :migrate, :only => { :primary => true } do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
     migrate_env = fetch(:migrate_env, "")
@@ -505,7 +505,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :start, :roles => :app do
+  task :start do
     # Empty Task to overload with your platform specifics
   end
 
@@ -513,7 +513,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :stop, :roles => :app do
+  task :stop do
     # Empty Task to overload with your platform specifics
   end
 
@@ -559,7 +559,7 @@ namespace :deploy do
 
       Further customization will require that you write your own task.
     DESC
-    task :disable, :roles => :web, :except => { :no_release => true } do
+    task :disable, :except => { :no_release => true } do
       require 'erb'
       on_rollback { run "rm -f #{shared_path}/system/#{maintenance_basename}.html" }
 
@@ -602,7 +602,7 @@ namespace :deploy do
       web servers are configured correctly) will make your application \
       web-accessible again.
     DESC
-    task :enable, :roles => :web, :except => { :no_release => true } do
+    task :enable, :except => { :no_release => true } do
       run "rm -f #{shared_path}/system/#{maintenance_basename}.html"
     end
   end

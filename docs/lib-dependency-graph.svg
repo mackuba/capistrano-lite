@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="960" viewBox="0 0 1400 960" role="img" aria-labelledby="title desc">
+<title id="title">Capistrano lib dependency graph</title>
+<desc id="desc">Dependency graph generated from docs/lib-codebase-map.md Mermaid chart.</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#516071"/>
+  </marker>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.12"/>
+  </filter>
+</defs>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="32" y="34" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Capistrano lib dependency graph</text>
+<text x="32" y="58" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13" fill="#64748b">Generated from docs/lib-codebase-map.md</text>
+<g fill="none" stroke="#516071" stroke-width="1.35" stroke-opacity="0.72" marker-end="url(#arrow)">
+  <path d="M 260 170 C 300 170, 300 170, 340 170"/>
+  <path d="M 260 170 C 300 170, 300 85, 340 85"/>
+  <path d="M 260 170 C 300 170, 300 255, 340 255"/>
+  <path d="M 260 340 C 300 340, 300 170, 340 170"/>
+  <path d="M 260 340 C 300 340, 300 340, 340 340"/>
+  <path d="M 260 340 C 300 340, 300 425, 340 425"/>
+  <path d="M 260 340 C 300 340, 300 510, 340 510"/>
+  <path d="M 600 170 C 640 170, 640 85, 680 85"/>
+  <path d="M 600 170 C 640 170, 640 145, 680 145"/>
+  <path d="M 600 170 C 640 170, 640 205, 680 205"/>
+  <path d="M 600 170 C 640 170, 640 265, 680 265"/>
+  <path d="M 600 170 C 640 170, 640 325, 680 325"/>
+  <path d="M 600 170 C 640 170, 640 385, 680 385"/>
+  <path d="M 600 170 C 640 170, 640 445, 680 445"/>
+  <path d="M 600 170 C 640 170, 640 505, 680 505"/>
+  <path d="M 600 170 C 640 170, 640 565, 680 565"/>
+  <path d="M 600 170 C 640 170, 640 625, 680 625"/>
+  <path d="M 940 145 C 980 145, 980 145, 1020 145"/>
+  <path d="M 940 325 C 980 325, 980 265, 1020 265"/>
+  <path d="M 940 385 C 980 385, 980 325, 1020 325"/>
+  <path d="M 940 385 C 980 385, 980 385, 1020 385"/>
+  <path d="M 940 445 C 980 445, 980 445, 1020 445"/>
+  <path d="M 940 505 C 980 505, 980 505, 1020 505"/>
+  <path d="M 1280 505 C 1300 505, 1300 565, 1020 565"/>
+  <path d="M 600 510 C 640 510, 640 565, 1020 565"/>
+  <path d="M 600 510 C 640 510, 640 445, 1020 445"/>
+  <path d="M 940 265 C 980 265, 980 625, 1020 625"/>
+  <path d="M 940 205 C 960 205, 960 265, 680 265"/>
+  <path d="M 260 595 C 300 595, 300 680, 340 680"/>
+  <path d="M 260 595 C 300 595, 300 765, 340 765"/>
+  <path d="M 260 595 C 300 595, 300 170, 340 170"/>
+  <path d="M 260 680 C 300 680, 300 595, 20 595"/>
+  <path d="M 260 765 C 300 765, 300 510, 340 510"/>
+  <path d="M 600 680 C 640 680, 640 680, 680 680"/>
+  <path d="M 940 680 C 980 680, 980 740, 1020 740"/>
+  <path d="M 600 765 C 640 765, 640 800, 680 800"/>
+  <path d="M 940 800 C 980 800, 980 800, 1020 800"/>
+  <path d="M 1280 800 C 1320 800, 1320 680, 1020 680"/>
+  <path d="M 1280 800 C 1320 800, 1320 170, 340 170"/>
+</g>
+<g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+  <rect x="20" y="141" width="240" height="58" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="140" y="170" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="650" fill="#0f172a">lib/capistrano.rb</text>
+  <rect x="340" y="141" width="260" height="58" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="170" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="650" fill="#0f172a">Capistrano::Configuration</text>
+  <rect x="340" y="56" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="85" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Capistrano.plugin / ExtensionProxy</text>
+  <rect x="340" y="226" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="255" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">String#compact</text>
+  <rect x="20" y="311" width="240" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="140" y="340" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Capistrano::CLI</text>
+  <rect x="340" y="311" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="340" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">CLI::Execute</text>
+  <rect x="340" y="396" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="425" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">CLI::Options</text>
+  <rect x="340" y="481" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="510" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">CLI::Help / CLI::UI</text>
+  <rect x="680" y="56" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="85" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Variables</text>
+  <rect x="680" y="116" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="145" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Namespaces</text>
+  <rect x="680" y="176" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="205" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Execution</text>
+  <rect x="680" y="236" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="265" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Callbacks</text>
+  <rect x="680" y="296" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="325" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Servers</text>
+  <rect x="680" y="356" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="385" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Connections</text>
+  <rect x="680" y="416" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="445" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Actions::Invocation</text>
+  <rect x="680" y="476" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="505" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Actions::FileTransfer</text>
+  <rect x="680" y="536" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="565" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Actions::Inspect</text>
+  <rect x="680" y="596" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="625" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Configuration::Loading / LogFormatters</text>
+  <rect x="1020" y="116" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="145" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">TaskDefinition</text>
+  <rect x="1020" y="236" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="265" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Callback / ProcCallback / TaskCallback</text>
+  <rect x="1020" y="296" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="325" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">ServerDefinition</text>
+  <rect x="1020" y="356" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="385" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">SSH / Errors</text>
+  <rect x="1020" y="416" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="445" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Command</text>
+  <rect x="1020" y="476" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="505" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Transfer</text>
+  <rect x="1020" y="536" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="565" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Processable</text>
+  <rect x="20" y="566" width="240" height="58" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="140" y="595" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="650" fill="#0f172a">recipes/deploy.rb</text>
+  <rect x="340" y="651" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="680" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Deploy::SCM factory</text>
+  <rect x="340" y="736" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="470" y="765" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Deploy::Strategy factory</text>
+  <rect x="20" y="651" width="240" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="140" y="680" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">recipes/deploy/assets.rb</text>
+  <rect x="20" y="736" width="240" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="140" y="765" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">recipes/standard.rb / compat.rb</text>
+  <rect x="680" y="651" width="260" height="58" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="680" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="650" fill="#0f172a">SCM::Base</text>
+  <rect x="1020" y="711" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="740" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Git, None</text>
+  <rect x="680" y="771" width="260" height="58" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="810" y="800" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="650" fill="#0f172a">Strategy::Base</text>
+  <rect x="1020" y="651" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="680" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Deploy::Dependencies</text>
+  <rect x="1020" y="771" width="260" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="1150" y="800" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#0f172a">Checkout, Export, Copy, RemoteCache</text>
+</g>
+</svg>

@@ -10,7 +10,7 @@ class ConfigurationTest < Test::Unit::TestCase
     @config = Capistrano::Configuration.new
   end
 
-  def test_connections_execution_loading_namespaces_roles_and_variables_modules_should_integrate_correctly
+  def test_connections_execution_loading_namespaces_servers_and_variables_modules_should_integrate_correctly
     Capistrano::SSH.expects(:connect).with { |s,c| s.host == "www.capistrano.test" && c == @config }.returns(:session)
 
     process_args = Proc.new do |command, session, opts|
@@ -22,10 +22,10 @@ class ConfigurationTest < Test::Unit::TestCase
     Capistrano::Command.expects(:process).with(&process_args)
 
     @config.load do
-      role :test, "www.capistrano.test"
+      server "www.capistrano.test"
       set  :message, "hello world"
       namespace :testing do
-        task :example, :roles => :test do
+        task :example do
           run "echo '#{message}'"
         end
       end

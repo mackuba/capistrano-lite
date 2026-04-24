@@ -178,10 +178,6 @@ module Capistrano
             @name = name
           end
 
-          def role(*args)
-            raise NotImplementedError, "roles cannot be defined in a namespace"
-          end
-
           def respond_to?(sym, include_priv=false)
             super || parent.respond_to?(sym, include_priv)
           end
