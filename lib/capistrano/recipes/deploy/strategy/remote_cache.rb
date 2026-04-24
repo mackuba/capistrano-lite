@@ -1,4 +1,4 @@
-require 'capistrano/recipes/deploy/strategy/remote'
+require 'capistrano/recipes/deploy/strategy/base'
 
 module Capistrano
   module Deploy
@@ -8,7 +8,7 @@ module Capistrano
       # the source code on each remote server. Each deploy simply updates the
       # cached checkout, and then does a copy from the cached copy to the
       # final deployment location.
-      class RemoteCache < Remote
+      class RemoteCache < Base
         # Executes the SCM command for this strategy and writes the REVISION
         # mark file to each host.
         def deploy!
@@ -49,6 +49,22 @@ module Capistrano
 
           def copy_exclude
             @copy_exclude ||= Array(configuration.fetch(:copy_exclude, []))
+          end
+
+          # Runs the given command, filtering output back through the
+          # #handle_data filter of the SCM implementation.
+          def scm_run(command)
+            run(command) do |ch,stream,text|
+              ch[:state] ||= { :channel => ch }
+              output = source.handle_data(ch[:state], stream, text)
+              ch.send_data(output) if output
+            end
+          end
+
+          # Returns the command which will write the identifier of the
+          # revision being deployed to the REVISION file on the server.
+          def mark
+            "(echo #{revision} > #{configuration[:release_path]}/REVISION)"
           end
       end
 
