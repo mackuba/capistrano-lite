@@ -4,8 +4,8 @@
 Status](https://secure.travis-ci.org/capistrano/capistrano.png)](http://travis-ci.org/capistrano/capistrano)[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/capistrano/capistrano)
 
 
-Capistrano is a utility and framework for executing commands in parallel on
-multiple remote machines, via SSH. It uses a simple DSL (borrowed in part from
+Capistrano is a utility and framework for executing commands on multiple remote
+machines, via SSH. It uses a simple DSL (borrowed in part from
 [Rake](http://rake.rubyforge.org/)) that allows you to define _tasks_, which may
 be applied to machines in certain roles. It also supports tunneling connections
 via some gateway machine to allow operations to be performed behind VPN's and

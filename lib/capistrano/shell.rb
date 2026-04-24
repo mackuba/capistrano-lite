@@ -178,7 +178,7 @@ HELP
         processor = configuration.sudo_behavior_callback(Configuration.default_io_proc)
         sessions = servers.map { |server| configuration.sessions[server] }
         options = configuration.add_default_command_options({})
-        cmd = Command.new(command, sessions, options.merge(:logger => configuration.logger), &processor)
+        cmd = Command.new(command, sessions, options.merge(:logger => configuration.logger, :configuration => configuration), &processor)
         previous = trap("INT") { cmd.stop! }
         cmd.process!
       rescue Capistrano::Error => error

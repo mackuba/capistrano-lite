@@ -13,10 +13,10 @@ class ConfigurationTest < Test::Unit::TestCase
   def test_connections_execution_loading_namespaces_roles_and_variables_modules_should_integrate_correctly
     Capistrano::SSH.expects(:connect).with { |s,c| s.host == "www.capistrano.test" && c == @config }.returns(:session)
 
-    process_args = Proc.new do |tree, session, opts|
-      tree.fallback.command == "echo 'hello world'" &&
+    process_args = Proc.new do |command, session, opts|
+      command == "echo 'hello world'" &&
       session == [:session] &&
-      opts == { :logger => @config.logger, :eof => true }
+      opts == { :logger => @config.logger, :eof => true, :configuration => @config }
     end
 
     Capistrano::Command.expects(:process).with(&process_args)

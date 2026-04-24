@@ -227,43 +227,6 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     @config.invoke_command("ls", :once => true, :via => :foobar)
   end
 
-  def test_parallel_command_execution_with_no_match
-    assert_block("should not raise argument error") do
-      begin
-        @config.parallel do |session|
-          session.when("in?(:app)", "ls") {|ch,stream,data| puts "noop"}
-          session.when("in?(:db)", "pwd") {|ch,stream,data| puts "noop"}
-        end
-        true
-      rescue
-        false
-      end
-    end
-  end
-
-  def test_parallel_command_execution_with_matching_servers
-    @config.expects(:execute_on_servers)
-
-    logger = mock('logger')
-    logger.stubs(:debug).with("executing multiple commands in parallel").once
-    logger.stubs(:trace).twice
-    @config.stubs(:logger).returns(logger)
-
-    assert_block("should not raise Argument error") do
-      begin
-        @config.servers = [:app, :db]
-        @config.roles = {:app => [:app], :db => [:db] }
-        @config.parallel do |session|
-          session.when("in?(:app)", "ls") {|ch,stream,data| puts "noop"}
-          session.when("in?(:db)", "pwd") {|ch,stream,data| puts "noop"}
-        end
-        true
-      rescue
-        false
-      end
-    end
-  end
-
   def test_run_only_logs_once
     @config.servers = [:app, :db]
 
@@ -297,8 +260,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
       b = mock("stream", :called => true)
       c = mock("data", :called => true)
 
-      compare_args = Proc.new do |tree, sess, opts|
-        tree.fallback.command == command && sess == sessions && opts == options
+      compare_args = Proc.new do |cmd, sess, opts|
+        cmd == command && sess == sessions && opts == options
       end
 
       Capistrano::Command.expects(:process).with(&compare_args)

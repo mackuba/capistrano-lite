@@ -5,139 +5,14 @@ require 'capistrano/processable'
 module Capistrano
 
   # This class encapsulates a single command to be executed on a set of remote
-  # machines, in parallel.
+  # machines, one host at a time.
   class Command
     include Processable
 
-    class Tree
-      attr_reader :configuration
-      attr_reader :branches
-      attr_reader :fallback
+    attr_reader :command, :options, :callback
 
-      include Enumerable
-
-      class Branch
-        attr_accessor :command, :callback, :condition
-        attr_reader :options
-
-        def initialize(command, options, callback)
-          @command = command.strip.gsub(/\r?\n/, "\\\n")
-          @callback = callback || Capistrano::Configuration.default_io_proc
-          @options = options
-          @skip = false
-        end
-
-        def last?
-          options[:last]
-        end
-
-        def skip?
-          @skip
-        end
-
-        def skip!
-          @skip = true
-        end
-
-        def match(server)
-          true
-        end
-
-        def to_s(parallel=false)
-          if parallel && @condition
-            "#{condition.inspect} :: #{command.inspect}"
-          else
-            command.inspect
-          end
-        end
-      end
-
-      class ConditionBranch < Branch
-        attr_accessor :configuration
-
-        class Evaluator
-          attr_reader :configuration, :condition, :server
-
-          def initialize(config, condition, server)
-            @configuration = config
-            @condition = condition
-            @server = server
-          end
-
-          def in?(role)
-            configuration.roles[role].include?(server)
-          end
-
-          def result
-            eval(condition, binding)
-          end
-
-          def method_missing(sym, *args, &block)
-            if server.respond_to?(sym)
-              server.send(sym, *args, &block)
-            elsif configuration.respond_to?(sym)
-              configuration.send(sym, *args, &block)
-            else
-              super
-            end
-          end
-        end
-
-        def initialize(configuration, condition, command, options, callback)
-          @configuration = configuration
-          @condition = condition
-          super(command, options, callback)
-        end
-
-        def match(server)
-          Evaluator.new(configuration, condition, server).result
-        end
-      end
-
-      class ElseBranch < Branch
-        def initialize(command, options, callback)
-          @condition = "else"
-          super(command, options, callback)
-        end
-      end
-
-      def initialize(config)
-        @configuration = config
-        @branches = []
-        yield self if block_given?
-      end
-
-      def when(condition, command, options={}, &block)
-        branches << ConditionBranch.new(configuration, condition, command, options, block)
-      end
-
-      def else(command, &block)
-        @fallback = ElseBranch.new(command, {}, block)
-      end
-
-      def branches_for(server)
-        seen_last = false
-        matches = branches.select do |branch|
-          success = !seen_last && !branch.skip? && branch.match(server)
-          seen_last = success && branch.last?
-          success
-        end
-
-        matches << fallback if matches.empty? && fallback
-        return matches
-      end
-
-      def each
-        branches.each { |branch| yield branch }
-        yield fallback if fallback
-        return self
-      end
-    end
-
-    attr_reader :tree, :sessions, :options
-
-    def self.process(tree, sessions, options={})
-      new(tree, sessions, options).process!
+    def self.process(command, sessions, options = {}, &block)
+      new(command, sessions, options, &block).process!
     end
 
     # Instantiates a new command object. The +command+ must be a string
@@ -149,26 +24,29 @@ module Capistrano
     # * +data+: (optional), a string to be sent to the command via it's stdin
     # * +env+: (optional), a string or hash to be interpreted as environment
     #   variables that should be defined for this command invocation.
-    def initialize(tree, sessions, options={}, &block)
-      if String === tree
-        tree = Tree.new(nil) { |t| t.else(tree, &block) }
-      elsif block
-        raise ArgumentError, "block given with tree argument"
-      end
-
-      @tree = tree
+    def initialize(command, sessions, options = {}, &block)
+      @command = command.strip.gsub(/\r?\n/, "\\\n")
       @sessions = sessions
       @options = options
-      @channels = open_channels
+      @callback = block || Capistrano::Configuration.default_io_proc
+      @channels = []
     end
 
-    # Processes the command in parallel on all specified hosts. If the command
+    # Processes the command sequentially on all specified hosts. If the command
     # fails (non-zero return code) on any of the hosts, this will raise a
     # Capistrano::CommandError.
     def process!
       elapsed = Benchmark.realtime do
-        loop do
-          break unless process_iteration { @channels.any? { |ch| !ch[:closed] } }
+        sessions.each do |session|
+          channel = open_channel(session)
+          begin
+            @active_sessions = [session]
+            loop do
+              break unless process_iteration { !channel[:closed] }
+            end
+          ensure
+            @active_sessions = nil
+          end
         end
       end
 
@@ -193,26 +71,31 @@ module Capistrano
       end
     end
 
+    def sessions
+      @active_sessions || @sessions
+    end
+
     private
 
       def logger
         options[:logger]
       end
 
-      def open_channels
-        sessions.map do |session|
-          server = session.xserver
-          tree.branches_for(server).map do |branch|
-            session.open_channel do |channel|
+      def open_channel(session)
+        server = session.xserver
+        opened = nil
+
+            returned = session.open_channel do |channel|
+              opened = channel
               channel[:server] = server
               channel[:host] = server.host
               channel[:options] = options
-              channel[:branch] = branch
+              channel[:callback] = callback
 
               request_pty_if_necessary(channel) do |ch, success|
                 if success
                   logger.trace "executing command", ch[:server] if logger
-                  cmd = replace_placeholders(channel[:branch].command, ch)
+                  cmd = replace_placeholders(command, ch)
 
                   if options[:shell] == false
                     shell = nil
@@ -238,11 +121,11 @@ module Capistrano
               end
 
               channel.on_data do |ch, data|
-                ch[:branch].callback[ch, :out, data]
+                ch[:callback][ch, :out, data]
               end
 
               channel.on_extended_data do |ch, type, data|
-                ch[:branch].callback[ch, :err, data]
+                ch[:callback][ch, :err, data]
               end
 
               channel.on_request("exit-status") do |ch, data|
@@ -260,8 +143,8 @@ module Capistrano
                 ch[:closed] = true
               end
             end
-          end
-        end.flatten
+
+        (returned || opened).tap { |channel| @channels << channel }
       end
 
       def request_pty_if_necessary(channel)
@@ -275,7 +158,7 @@ module Capistrano
       end
 
       def replace_placeholders(command, channel)
-        roles = @tree.configuration && @tree.configuration.role_names_for_host(channel[:server])
+        roles = options[:configuration] && options[:configuration].role_names_for_host(channel[:server])
         command = command.gsub(/\$CAPISTRANO:HOST\$/, channel[:host])
         command.gsub!(/\$CAPISTRANO:HOSTROLES\$/, roles.join(',')) if roles
         command

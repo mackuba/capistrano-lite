@@ -26,59 +26,6 @@ module Capistrano
           set :default_run_options, {}
         end
 
-        # Executes different commands in parallel. This is useful for commands
-        # that need to be different on different hosts, but which could be
-        # otherwise run in parallel.
-        #
-        # The +options+ parameter is currently unused.
-        #
-        # Example:
-        #
-        #   task :restart_everything do
-        #     parallel do |session|
-        #       session.when "in?(:app)", "/path/to/restart/mongrel"
-        #       session.when "in?(:web)", "/path/to/restart/apache"
-        #       session.when "in?(:db)", "/path/to/restart/mysql"
-        #     end
-        #   end
-        #
-        # Each command may have its own callback block, for capturing and
-        # responding to output, with semantics identical to #run:
-        #
-        #   session.when "in?(:app)", "/path/to/restart/mongrel" do |ch, stream, data|
-        #     # ch is the SSH channel for this command, used to send data
-        #     #    back to the command (e.g. ch.send_data("password\n"))
-        #     # stream is either :out or :err, for which stream the data arrived on
-        #     # data is a string containing data sent from the remote command
-        #   end
-        #
-        # Also, you can specify a fallback command, to use when none of the
-        # conditions match a server:
-        #
-        #   session.else "/execute/something/else"
-        #
-        # The string specified as the first argument to +when+ may be any valid
-        # Ruby code. It has access to the following variables and methods:
-        #
-        # * +in?(role)+ returns true if the server participates in the given role
-        # * +server+ is the ServerDefinition object for the server. This can be
-        #   used to get the host-name, etc.
-        # * +configuration+ is the current Capistrano::Configuration object, which
-        #   you can use to get the value of variables, etc.
-        #
-        # For example:
-        #
-        #   session.when "server.host =~ /app/", "/some/command"
-        #   session.when "server.host == configuration[:some_var]", "/another/command"
-        #   session.when "in?(:web) || in?(:app)", "/more/commands"
-        #
-        # See #run for a description of the valid +options+.
-        def parallel(options={})
-          raise ArgumentError, "parallel() requires a block" unless block_given?
-          tree = Command::Tree.new(self) { |t| yield t }
-          run_tree(tree, options)
-        end
-
         # Invokes the given command. If a +via+ key is given, it will be used
         # to determine what method to use to invoke the command. It defaults
         # to :run, but may be :sudo, or any other method that conforms to the
@@ -119,9 +66,8 @@ module Capistrano
         # * :max_hosts - specifies the maximum number of hosts that should be selected
         #   at a time. If this value is less than the number of hosts that are selected
         #   to run, then the hosts will be run in groups of max_hosts. The default is nil,
-        #   which indicates that there is no maximum host limit. Please note this does not
-        #   limit the number of SSH channels that can be open, only the number of hosts upon
-        #   which this will be called.
+        #   which indicates that there is no maximum host limit. Hosts in each
+        #   batch are still processed one command channel at a time.
         # * :shell - says which shell should be used to invoke commands. This
         #   defaults to "sh". Setting this to false causes Capistrano to invoke
         #   the commands directly, without wrapping them in a shell invocation.
@@ -144,58 +90,33 @@ module Capistrano
         #   passed.
         #
         # Note that if you set these keys in the +default_run_options+ Capistrano
-        # variable, they will apply for all invocations of #run, #invoke_command,
-        # and #parallel.
+        # variable, they will apply for all invocations of #run and
+        # #invoke_command.
         def run(cmd, options={}, &block)
           if options[:eof].nil? && !cmd.include?(sudo)
             options = options.merge(:eof => !block_given?)
           end
           block ||= self.class.default_io_proc
-          tree = Command::Tree.new(self) { |t| t.else(cmd, &block) }
-          run_tree(tree, options)
-        end
-
-        # Executes a Capistrano::Command::Tree object. This is not for direct
-        # use, but should instead be called indirectly, via #run or #parallel,
-        # or #invoke_command.
-        def run_tree(tree, options={}) #:nodoc:
           options = add_default_command_options(options)
 
-          if tree.branches.any? || tree.fallback
-            _, servers = filter_servers(options)
-            branches = branches_for_servers(tree,servers)
-            case branches.size
-            when 0
-              branches = tree.branches.dup + [tree.fallback]
-              branches.compact!
-              case branches.size
-              when 1
-                logger.debug "no servers for #{branches.first}"
-              else
-                logger.debug "no servers for commands"
-                branches.each{ |branch| logger.trace "-> #{branch.to_s(true)}" }
-              end
-            when 1
-              logger.debug "executing #{branches.first}" unless options[:silent]
-            else
-              logger.debug "executing multiple commands in parallel"
-              branches.each {|branch| logger.trace "-> #{branch.to_s(true)}" }
-            end
-          else
+          if cmd.nil? || cmd.empty?
             raise ArgumentError, "attempt to execute without specifying a command"
           end
 
-          return if dry_run || (debug && continue_execution(tree) == false)
-
-          tree.each do |branch|
-            if branch.command.include?(sudo)
-              branch.callback = sudo_behavior_callback(branch.callback)
-            end
+          _, servers = filter_servers(options)
+          if servers.empty?
+            logger.debug "no servers for #{cmd.inspect}"
+          else
+            logger.debug "executing #{cmd.inspect}" unless options[:silent]
           end
+
+          return if dry_run || (debug && continue_execution(cmd) == false)
+
+          block = sudo_behavior_callback(block) if cmd.include?(sudo)
 
           execute_on_servers(options) do |servers|
             targets = servers.map { |s| sessions[s] }
-            Command.process(tree, targets, options.merge(:logger => logger))
+            Command.process(cmd, targets, options.merge(:logger => logger, :configuration => self), &block)
           end
         end
 
@@ -293,17 +214,8 @@ module Capistrano
           fetch(:sudo_prompt, "sudo password: ")
         end
 
-        def continue_execution(tree)
-          if tree.branches.length == 1
-            continue_execution_for_branch(tree.branches.first)
-          else
-            tree.each { |branch| branch.skip! unless continue_execution_for_branch(branch) }
-            tree.any? { |branch| !branch.skip? }
-          end
-        end
-
-        def continue_execution_for_branch(branch)
-          case Capistrano::CLI.debug_prompt(branch)
+        def continue_execution(command)
+          case Capistrano::CLI.debug_prompt(command.inspect)
             when "y"
               true
             when "n"
@@ -311,16 +223,6 @@ module Capistrano
             when "a"
               exit(-1)
           end
-        end
-
-        private
-        def branches_for_servers(tree,servers)
-          servers.inject([]) do |branches,server|
-            if server_branches = tree.branches_for(server)
-              branches += server_branches
-            end
-            branches
-          end.compact.uniq
         end
 
       end
