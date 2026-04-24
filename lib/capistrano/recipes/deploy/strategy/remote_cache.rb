@@ -30,7 +30,7 @@ module Capistrano
           end
 
           def update_repository_cache
-            logger.trace "updating the cached checkout on all servers"
+            logger.trace "updating the cached checkout on the server"
             command = "if [ -d #{repository_cache} ]; then " +
               "#{source.sync(revision, repository_cache)}; " +
               "else #{source.checkout(revision, repository_cache)}; fi"

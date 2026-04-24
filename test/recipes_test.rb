@@ -12,6 +12,7 @@ class RecipesTest < Test::Unit::TestCase
     @config.dry_run = true
     @config.load 'deploy'
     @config.load do
+      server "example.com"
       set :application, "foo"
       task :dry_run_test do
         fetch :current_release

@@ -57,13 +57,13 @@ _cset(:shared_path)       { File.join(deploy_to, shared_dir) }
 _cset(:current_path)      { File.join(deploy_to, current_dir) }
 _cset(:release_path)      { File.join(releases_path, release_name) }
 
-_cset(:releases)          { capture("#{try_sudo} ls -x #{releases_path}", :except => { :no_release => true }).split.sort }
+_cset(:releases)          { capture("#{try_sudo} ls -x #{releases_path}").split.sort }
 _cset(:current_release)   { releases.length > 0 ? File.join(releases_path, releases.last) : nil }
 _cset(:previous_release)  { releases.length > 1 ? File.join(releases_path, releases[-2]) : nil }
 
-_cset(:current_revision)  { capture("#{try_sudo} cat #{current_path}/REVISION",     :except => { :no_release => true }).chomp }
-_cset(:latest_revision)   { capture("#{try_sudo} cat #{current_release}/REVISION",  :except => { :no_release => true }).chomp }
-_cset(:previous_revision) { capture("#{try_sudo} cat #{previous_release}/REVISION", :except => { :no_release => true }).chomp if previous_release }
+_cset(:current_revision)  { capture("#{try_sudo} cat #{current_path}/REVISION").chomp }
+_cset(:latest_revision)   { capture("#{try_sudo} cat #{current_release}/REVISION").chomp }
+_cset(:previous_revision) { capture("#{try_sudo} cat #{previous_release}/REVISION").chomp if previous_release }
 
 _cset(:run_method)        { fetch(:use_sudo, true) ? :sudo : :run }
 
@@ -187,18 +187,18 @@ namespace :deploy do
   end
 
   desc <<-DESC
-    Prepares one or more servers for deployment. Before you can use any \
+    Prepares the server for deployment. Before you can use any \
     of the Capistrano deployment tasks with your project, you will need to \
-    make sure all of your servers have been prepared with `cap deploy:setup'. When \
-    you add a new server to your cluster, you can easily run the setup task \
-    on just that server by specifying the HOSTS environment variable:
+    make sure your server has been prepared with `cap deploy:setup'. To \
+    temporarily run setup against a different server, specify the HOST \
+    environment variable:
 
-      $ cap HOSTS=new.server.com deploy:setup
+      $ cap HOST=new.server.com deploy:setup
 
-    It is safe to run this task on servers that have already been set up; it \
+    It is safe to run this task on a server that has already been set up; it \
     will not destroy any deployed revisions or data.
   DESC
-  task :setup, :except => { :no_release => true } do
+  task :setup do
     dirs = [deploy_to, releases_path, shared_path]
     dirs += shared_children.map { |d| File.join(shared_path, d.split('/').last) }
     run "#{try_sudo} mkdir -p #{dirs.join(' ')}"
@@ -208,7 +208,7 @@ namespace :deploy do
   desc <<-DESC
     Copies your project and updates the symlink. It does this in a \
     transaction, so that if either `update_code' or `symlink' fail, all \
-    changes made to the remote servers will be rolled back, leaving your \
+    changes made to the remote server will be rolled back, leaving your \
     system in the same state it was in before `update' was invoked. Usually, \
     you will want to call `deploy' instead of `update', but `update' can be \
     handy if you want to deploy, but not immediately restart your application.
@@ -221,9 +221,9 @@ namespace :deploy do
   end
 
   desc <<-DESC
-    Copies your project to the remote servers. This is the first stage \
+    Copies your project to the remote server. This is the first stage \
     of any deployment; moving your updated code and assets to the deployment \
-    servers. You will rarely call this task directly, however; instead, you \
+    server. You will rarely call this task directly, however; instead, you \
     should call the `deploy' task (to do a complete deploy) or the `update' \
     task (if you want to perform the `restart' task separately).
 
@@ -232,7 +232,7 @@ namespace :deploy do
     is present, and :none otherwise), and the :deploy_via variable to the \
     strategy you want to use to deploy (it defaults to :checkout).
   DESC
-  task :update_code, :except => { :no_release => true } do
+  task :update_code do
     on_rollback { run "rm -rf #{release_path}; true" }
     strategy.deploy!
     finalize_update
@@ -254,7 +254,7 @@ namespace :deploy do
     set to true, which is the default. The asset directories can be overridden \
     using the :public_children variable.
   DESC
-  task :finalize_update, :except => { :no_release => true } do
+  task :finalize_update do
     escaped_release = latest_release.to_s.shellescape
     commands = []
     commands << "chmod -R -- g+w #{escaped_release}" if fetch(:group_writable, true)
@@ -287,7 +287,7 @@ namespace :deploy do
   desc <<-DESC
     Deprecated API. This has become deploy:create_symlink, please update your recipes
   DESC
-  task :symlink, :except => { :no_release => true } do
+  task :symlink do
     Kernel.warn "[Deprecation Warning] This API has changed, please hook `deploy:create_symlink` instead of `deploy:symlink`."
     create_symlink
   end
@@ -301,7 +301,7 @@ namespace :deploy do
     deploy, including `restart') or the 'update' task (which does everything \
     except `restart').
   DESC
-  task :create_symlink, :except => { :no_release => true } do
+  task :create_symlink do
     on_rollback do
       if previous_release
         run "#{try_sudo} rm -f #{current_path}; #{try_sudo} ln -s #{previous_release} #{current_path}; true"
@@ -323,7 +323,7 @@ namespace :deploy do
     To use this task, specify the files and directories you want to copy as a \
     comma-delimited list in the FILES environment variable. All directories \
     will be processed recursively, with all files being pushed to the \
-    deployment servers.
+    deployment server.
 
       $ cap deploy:upload FILES=templates,controller.rb
 
@@ -331,7 +331,7 @@ namespace :deploy do
 
       $ cap deploy:upload FILES='config/apache/*.conf'
   DESC
-  task :upload, :except => { :no_release => true } do
+  task :upload do
     files = (ENV["FILES"] || "").split(",").map { |f| Dir[f.strip] }.flatten
     abort "Please specify at least one file or directory to update (via the FILES environment variable)" if files.empty?
 
@@ -342,7 +342,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
-  task :restart, :except => { :no_release => true } do
+  task :restart do
     # Empty Task to overload with your platform specifics
   end
 
@@ -352,7 +352,7 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely (if
       ever) need to be called directly.
     DESC
-    task :revision, :except => { :no_release => true } do
+    task :revision do
       if previous_release
         run "#{try_sudo} rm #{current_path}; #{try_sudo} ln -s #{previous_release} #{current_path}"
       else
@@ -365,17 +365,17 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely
       (if ever) need to be called directly.
     DESC
-    task :cleanup, :except => { :no_release => true } do
+    task :cleanup do
       run "if [ `readlink #{current_path}` != #{current_release} ]; then #{try_sudo} rm -rf #{current_release}; fi"
     end
 
     desc <<-DESC
       Rolls back to the previously deployed version. The `current' symlink will \
       be updated to point at the previously deployed version, and then the \
-      current release will be removed from the servers. You'll generally want \
+      current release will be removed from the server. You'll generally want \
       to call `rollback' instead, as it performs a `restart' as well.
     DESC
-    task :code, :except => { :no_release => true } do
+    task :code do
       revision
       cleanup
     end
@@ -407,7 +407,7 @@ namespace :deploy do
       set :migrate_env,    ""
       set :migrate_target, :latest
   DESC
-  task :migrate, :only => { :primary => true } do
+  task :migrate do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
     migrate_env = fetch(:migrate_env, "")
@@ -440,11 +440,11 @@ namespace :deploy do
   desc <<-DESC
     Clean up old releases. By default, the last 5 releases are kept on each \
     server (though you can change this with the keep_releases variable). All \
-    other deployed revisions are removed from the servers. By default, this \
+    other deployed revisions are removed from the server. By default, this \
     will use sudo to clean up the old releases, but if sudo is not available \
     for your environment, set the :use_sudo variable to false instead.
   DESC
-  task :cleanup, :except => { :no_release => true } do
+  task :cleanup do
     count = fetch(:keep_releases, 5).to_i
     try_sudo "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
   end
@@ -461,7 +461,7 @@ namespace :deploy do
       depend :local, :command, "svn"
       depend :remote, :directory, "/u/depot/files"
   DESC
-  task :check, :except => { :no_release => true } do
+  task :check do
     dependencies = strategy.check!
 
     other = fetch(:dependencies, {})
@@ -523,7 +523,7 @@ namespace :deploy do
       to examine what changes are about to be deployed. Note that this might \
       not be supported on all SCM's.
     DESC
-    task :diff, :except => { :no_release => true } do
+    task :diff do
       system(source.local.diff(current_revision))
     end
 
@@ -532,7 +532,7 @@ namespace :deploy do
       of the changes that have occurred since the last deploy. Note that this \
       might not be supported on all SCM's.
     DESC
-    task :default, :except => { :no_release => true } do
+    task :default do
       from = source.next_revision(current_revision)
       system(source.local.log(from))
     end
@@ -541,8 +541,8 @@ namespace :deploy do
   namespace :web do
     desc <<-DESC
       Present a maintenance page to visitors. Disables your application's web \
-      interface by writing a "#{maintenance_basename}.html" file to each web server. The \
-      servers must be configured to detect the presence of this file, and if \
+      interface by writing a "#{maintenance_basename}.html" file to the web server. The \
+      server must be configured to detect the presence of this file, and if \
       it is present, always display it instead of performing the request.
 
       By default, the maintenance page will just say the site is down for \
@@ -559,7 +559,7 @@ namespace :deploy do
 
       Further customization will require that you write your own task.
     DESC
-    task :disable, :except => { :no_release => true } do
+    task :disable do
       require 'erb'
       on_rollback { run "rm -f #{shared_path}/system/#{maintenance_basename}.html" }
 
@@ -599,10 +599,10 @@ namespace :deploy do
     desc <<-DESC
       Makes the application web-accessible again. Removes the \
       "#{maintenance_basename}.html" page generated by deploy:web:disable, which (if your \
-      web servers are configured correctly) will make your application \
+      web server is configured correctly) will make your application \
       web-accessible again.
     DESC
-    task :enable, :except => { :no_release => true } do
+    task :enable do
       run "rm -f #{shared_path}/system/#{maintenance_basename}.html"
     end
   end

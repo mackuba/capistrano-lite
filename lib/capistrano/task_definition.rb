@@ -4,15 +4,13 @@ module Capistrano
 
   class TaskDefinition
 
-    attr_reader :name, :namespace, :options, :body, :desc, :on_error, :max_hosts
+    attr_reader :name, :namespace, :options, :body, :desc, :on_error
 
     def initialize(name, namespace, options={}, &block)
       @name, @namespace, @options = name, namespace, options
       @desc      = @options.delete(:desc)
       @on_error  = options.delete(:on_error)
-      @max_hosts = options[:max_hosts] && options[:max_hosts].to_i
       @body      = block or raise ArgumentError, "a task requires a block"
-      @servers   = nil
     end
 
     # Returns the task's fully-qualified name, including the namespace

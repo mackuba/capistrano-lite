@@ -1,4 +1,5 @@
 require 'capistrano/server_definition'
+require 'capistrano/errors'
 
 module Capistrano
   class Configuration
@@ -8,87 +9,44 @@ module Capistrano
         base.send :alias_method, :initialize, :initialize_with_servers
       end
 
-      # The current list of server definitions.
-      attr_reader :servers
-
       def initialize_with_servers(*args) #:nodoc:
         initialize_without_servers(*args)
-        @servers = []
+        @server = nil
       end
 
-      # Define one or more servers. Hosts may include user and port information,
-      # or those may be supplied as options:
+      # Define the server. The host may include user and port information, or
+      # those may be supplied as options:
       #
       #   server "www@example.com"
-      #   server "app1.example.com", "app2.example.com", :user => "deploy"
-      #   server "db.example.com", :primary => true
-      def server(*hosts)
-        options = hosts.last.is_a?(Hash) ? hosts.pop : {}
-        raise ArgumentError, "you must specify at least one server" if hosts.empty?
+      #   server "app.example.com", :user => "deploy"
+      def server(host, options = {})
+        raise ArgumentError, "server accepts one host and an optional options hash" unless options.is_a?(Hash)
+        raise ArgumentError, "you may only define one server" if @server
 
-        hosts.each { |host| @servers << server_definition_from(host, options) }
+        @server = server_definition_from(host, options)
       end
 
-      # Identifies all servers that the given task should be executed on.
-      # The options hash accepts the same arguments as #find_servers, and any
-      # preexisting options there will take precedence over the options in
-      # the task.
+      # Identifies the configured server that the given task should be executed on.
       def find_servers_for_task(task, options={})
-        find_servers(task.options.merge(options))
+        find_servers
       end
 
-      # Attempts to find all defined servers that match the given criteria.
-      # The options hash may include a :hosts option (which should specify
-      # an array of host names or ServerDefinition instances), an :only option
-      # (specifying a hash of key/value pairs that any matching server must
-      # match), an :except option (like :only, but the inverse), and a
-      # :skip_hostfilter option to ignore the HOSTFILTER environment variable.
-      #
-      # Additionally, if the HOSTS environment variable is set, it will take
-      # precedence over any other options.
-      #
-      # Yet additionally, if the HOSTFILTER environment variable is set, it
-      # will limit the result to hosts found in that (comma-separated) list.
-      #
-      # Usage:
-      #
-      #   # return all known servers
-      #   servers = find_servers
-      #
-      #   # find all servers that are not exempted from deployment
-      #   servers = find_servers :except => { :no_release => true }
-      #
-      #   # returns the given hosts, translated to ServerDefinition objects
-      #   servers = find_servers :hosts => "jamis@example.host.com"
+      # Returns the single configured server. If the HOST environment variable
+      # is set, it replaces the configured host name while preserving configured
+      # connection options such as user, port, password, and SSH options.
       def find_servers(options={})
-        return [] if options.key?(:hosts) && (options[:hosts].nil? || [] == options[:hosts])
-
-        hosts  = server_list_from(ENV['HOSTS'] || options[:hosts])
-        hosts = servers if hosts.empty?
-
-        only   = options[:only] || {}
-        except = options[:except] || {}
-
-        hosts = hosts.select { |server| only.all? { |key,value| server.options[key] == value } }
-        hosts = hosts.reject { |server| except.any? { |key,value| server.options[key] == value } }
-        hosts = hosts.uniq
-
-        options[:skip_hostfilter] ? hosts : filter_server_list(hosts)
+        [active_server]
       end
 
     protected
 
-      def filter_server_list(servers)
-        return servers unless ENV['HOSTFILTER']
+      def active_server
+        raise Capistrano::NoMatchingServersError, "no server configured" unless @server
 
-        filters = ENV['HOSTFILTER'].split(/,/)
-        servers.select { |server| filters.include?(server.host) }
-      end
+        host = ENV['HOST']
+        raise ArgumentError, "HOST must name a single host" if host && host.strip.empty?
 
-      def server_list_from(hosts)
-        hosts = hosts.split(/,/) if String === hosts
-        hosts = Array(hosts).flatten
-        hosts.map { |s| server_definition_from(s) }
+        host ? server_definition_from(host, connection_options_for(@server)) : @server
       end
 
       def server_definition_from(host, options={})
@@ -96,10 +54,19 @@ module Capistrano
         when ServerDefinition
           host
         when String
-          ServerDefinition.new(host.strip, options)
+          host = host.strip
+          raise ArgumentError, "server must name a single host" if host.empty? || host.include?(',')
+          ServerDefinition.new(host, options)
         else
           raise ArgumentError, "servers must be defined as host strings or ServerDefinition instances"
         end
+      end
+
+      def connection_options_for(server)
+        options = server.options.dup
+        options[:user] = server.user if server.user
+        options[:port] = server.port if server.port
+        options
       end
     end
   end

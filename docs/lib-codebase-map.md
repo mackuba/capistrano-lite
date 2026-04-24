@@ -4,7 +4,7 @@ This document maps the files under `lib/`, the classes/modules they define, what
 
 ## High-Level Shape
 
-Capistrano is centered on `Capistrano::Configuration`. The root file loads the configuration DSL, extension/plugin support, and a small `String` helper. `Configuration` mixes in modules for variables, task namespaces, callbacks, server selection, recipe loading, SSH connection management, command execution, file transfer, and inspection helpers.
+Capistrano is centered on `Capistrano::Configuration`. The root file loads the configuration DSL, extension/plugin support, and a small `String` helper. `Configuration` mixes in modules for variables, task namespaces, callbacks, single-server selection, recipe loading, SSH connection management, command execution, file transfer, and inspection helpers.
 
 Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes two plugin families:
 
@@ -30,12 +30,12 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/configuration/actions/invocation.rb` | `Capistrano::Configuration::Actions::Invocation` | Adds `run`, `invoke_command`, `sudo`, command defaults, sudo prompt handling, and debug prompting. Converts DSL command calls into sequential `Command` execution. | `command`, `Connections#filter_servers`, `Connections#execute_on_servers`, `CLI.debug_prompt`, `Variables` |
 | `lib/capistrano/configuration/alias_task.rb` | `Capistrano::Configuration::AliasTask` | Adds `alias_task`, duplicating an existing task under a new name. | `Namespaces#find_task`, `#define_task`, `NoSuchTaskError` |
 | `lib/capistrano/configuration/callbacks.rb` | `Capistrano::Configuration::Callbacks` | Adds task lifecycle hooks: `before`, `after`, `on`, `trigger`. Wraps task invocation so callbacks fire around every direct task call. | `callback`, `Execution#invoke_task_directly`, `Execution#find_and_execute_task` |
-| `lib/capistrano/configuration/connections.rb` | `Capistrano::Configuration::Connections`, `DefaultConnectionFactory`, `GatewayConnectionFactory` | Manages thread-local SSH sessions, failures, gateway tunnels, connection establishment/teardown, server filtering for current tasks, batching by `max_hosts`, and continuing after remote errors where requested. | `ssh`, `errors`, `Servers`, `Execution#current_task`, `Net::SSH::Gateway` |
+| `lib/capistrano/configuration/connections.rb` | `Capistrano::Configuration::Connections`, `DefaultConnectionFactory`, `GatewayConnectionFactory` | Manages thread-local SSH sessions, failures, gateway tunnels, single-server connection establishment/teardown, current task server lookup, and continuing after remote errors where requested. | `ssh`, `errors`, `Servers`, `Execution#current_task`, `Net::SSH::Gateway` |
 | `lib/capistrano/configuration/execution.rb` | `Capistrano::Configuration::Execution`, `TaskCallFrame` | Runs tasks, tracks the current task stack, implements transactions and `on_rollback`, and locates/executes tasks by name. | `errors`, `Namespaces`, `Callbacks` |
 | `lib/capistrano/configuration/loading.rb` | `Capistrano::Configuration::Loading`, `Loading::ClassMethods` | Loads recipes from files, strings, or procs. Provides a Capistrano-aware `require` that lets multiple configuration instances reload recipe DSL effects. | Used by `CLI::Execute`, recipes, extensions |
 | `lib/capistrano/configuration/log_formatters.rb` | `Capistrano::Configuration::LogFormatters` | DSL for adding logger formatters and disabling formatting. | `logger` |
 | `lib/capistrano/configuration/namespaces.rb` | `Capistrano::Configuration::Namespaces`, `Namespaces::Namespace`, `Kernel.method_added` hook | Implements `namespace`, `task`, `desc`, task lookup, namespace lookup, default tasks, and nested namespace forwarding to parent configuration. | `task_definition`, `alias_task`, `execution` |
-| `lib/capistrano/configuration/servers.rb` | `Capistrano::Configuration::Servers` | Adds the host-only `server` DSL and finds matching servers for a task or arbitrary filters. Applies `HOSTS`, `HOSTFILTER`, `:only`, and `:except`. | `ServerDefinition` |
+| `lib/capistrano/configuration/servers.rb` | `Capistrano::Configuration::Servers` | Adds the single-host `server` DSL and resolves the configured server, with `HOST` as a one-host environment override. | `ServerDefinition`, `errors` |
 | `lib/capistrano/configuration/variables.rb` | `Capistrano::Configuration::Variables` | Thread-safe configuration variables with lazy proc evaluation, reset/unset, `fetch`, `[]`, and variable-backed `method_missing`. | `thread`; used by nearly every DSL and recipe file |
 | `lib/capistrano/errors.rb` | `Capistrano::Error`, `CaptureError`, `NoSuchTaskError`, `NoMatchingServersError`, `RemoteError`, `ConnectionError`, `TransferError`, `CommandError`, `LocalArgumentError` | Shared exception hierarchy. Remote errors carry affected hosts. | Used by command, transfer, connections, execution, recipes, deploy adapters |
 | `lib/capistrano/ext/string.rb` | reopens `String` | Adds `String#compact`, collapsing whitespace. Used to make heredoc shell commands one line. | Used by deploy assets and recipe command heredocs |
@@ -65,7 +65,7 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/recipes/templates/maintenance.rhtml` | none | ERB/XHTML maintenance-page template used by `deploy:web:disable`. | Read by `recipes/deploy.rb` |
 | `lib/capistrano/server_definition.rb` | `Capistrano::ServerDefinition` | Parses and stores `user@host:port` plus server options. Provides comparison, equality/hash, default user, and string rendering. | Used by `Servers`, `SSH`, `Connections` |
 | `lib/capistrano/ssh.rb` | `Capistrano::SSH`, `SSH::Server` | SSH connection helper. Applies the originating `ServerDefinition` to Net::SSH sessions and implements public-key-first then password fallback connection strategy. | `net/ssh`, `ServerDefinition` |
-| `lib/capistrano/task_definition.rb` | `Capistrano::TaskDefinition` | Stores task metadata: name, namespace, options, body, description, rollback behavior, and max host count. Formats descriptions and computes fully qualified names. | `server_definition`; used by `configuration/namespaces` and `execution` |
+| `lib/capistrano/task_definition.rb` | `Capistrano::TaskDefinition` | Stores task metadata: name, namespace, options, body, description, and rollback behavior. Formats descriptions and computes fully qualified names. | `server_definition`; used by `configuration/namespaces` and `execution` |
 | `lib/capistrano/transfer.rb` | `Capistrano::Transfer`, `Transfer::SFTPTransferWrapper` | Parallel upload/download engine over SFTP or SCP. Normalizes per-host paths/IOs, tracks failures per transfer, delegates event processing to `Processable`, and raises `TransferError`. | `net/scp`, `net/sftp`, `processable`, `errors`, SSH sessions |
 | `lib/capistrano/version.rb` | `Capistrano::Version`, `Capistrano::VERSION` | Version constants and string rendering for Capistrano 2.15.11. | Used by CLI `--version` |
 | `lib/.DS_Store` | none | macOS Finder metadata. Not Ruby code and has no runtime role. | none |
@@ -148,7 +148,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/configuration/connections.rb` | `capistrano/ssh`, `capistrano/errors` |
 | `lib/capistrano/configuration/execution.rb` | `capistrano/errors` |
 | `lib/capistrano/configuration/namespaces.rb` | `capistrano/task_definition` |
-| `lib/capistrano/configuration/servers.rb` | `capistrano/server_definition` |
+| `lib/capistrano/configuration/servers.rb` | `capistrano/server_definition`, `capistrano/errors` |
 | `lib/capistrano/recipes/compat.rb` | `load 'deploy'` |
 | `lib/capistrano/recipes/deploy.rb` | `capistrano/recipes/deploy/scm`, `capistrano/recipes/deploy/strategy` |
 | `lib/capistrano/recipes/deploy/assets.rb` | `load 'deploy'` unless `_cset` already exists |

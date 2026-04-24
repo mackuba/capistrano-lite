@@ -59,8 +59,8 @@ class ServerDefinitionTest < Test::Unit::TestCase
   end
 
   def test_new_with_options_should_keep_options
-    server = Capistrano::ServerDefinition.new("www.capistrano.test", :primary => true)
-    assert_equal true, server.options[:primary]
+    server = Capistrano::ServerDefinition.new("www.capistrano.test", :ssh_options => { :forward_agent => true })
+    assert_equal({ :forward_agent => true }, server.options[:ssh_options])
   end
 
   def test_default_user_should_try_to_guess_username

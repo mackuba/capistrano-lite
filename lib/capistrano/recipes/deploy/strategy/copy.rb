@@ -55,9 +55,8 @@ module Capistrano
       # recompile everything.
       class Copy < Base
         # Obtains a copy of the source code locally (via the #command method),
-        # compresses it to a single file, copies that file to all target
-        # servers, and uncompresses it on each of them into the deployment
-        # directory.
+        # compresses it to a single file, copies that file to the target
+        # server, and uncompresses it into the deployment directory.
         def deploy!
           copy_cache ? run_copy_cache_strategy : run_copy_strategy
 
@@ -323,7 +322,7 @@ module Capistrano
             run "cd #{configuration[:releases_path]} && #{decompress(remote_filename).join(" ")} && rm #{remote_filename}"
           end
 
-          # Distributes the file to the remote servers
+          # Uploads the file to the remote server
           def distribute!
             args = [filename, remote_filename]
             args << { :via => configuration[:copy_via] } if configuration[:copy_via]

@@ -5,12 +5,7 @@ module Capistrano
     module Actions
       module Inspect
 
-        # Streams the result of the command from all servers that are the
-        # target of the current task. All these streams will be joined into a
-        # single one, so you can, say, watch 10 log files as though they were
-        # one. Do note that this is quite expensive from a bandwidth
-        # perspective, so use it with care.
-        #
+        # Streams the result of the command from the configured server.
         # The command is invoked via #invoke_command.
         #
         # Usage:

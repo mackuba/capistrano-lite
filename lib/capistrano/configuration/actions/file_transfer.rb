@@ -5,20 +5,19 @@ module Capistrano
     module Actions
       module FileTransfer
 
-        # Store the given data at the given location on all servers targetted
-        # by the current task. If <tt>:mode</tt> is specified it is used to
-        # set the mode on the file.
+        # Store the given data at the given location on the configured server.
+        # If <tt>:mode</tt> is specified it is used to set the mode on the file.
         def put(data, path, options={})
           opts = options.dup
           upload(StringIO.new(data), path, opts)
         end
 
-        # Get file remote_path from FIRST server targeted by
-        # the current task and transfer it to local machine as path.
+        # Get file remote_path from the configured server and transfer it to
+        # local machine as path.
         #
         # get "#{deploy_to}/current/log/production.log", "log/production.log.web"
         def get(remote_path, path, options={}, &block)
-          download(remote_path, path, options.merge(:once => true), &block)
+          download(remote_path, path, options, &block)
         end
 
         def upload(from, to, options={}, &block)

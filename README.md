@@ -37,7 +37,7 @@ Capistrano is "opinionated software", which means it has very firm ideas about
 how things ought to be done, and tries to force those ideas on you. Some of the
 assumptions behind these opinions are:
 
-* You are using SSH to access the remote servers.
+* You are using SSH to access the remote server.
 * You either have the same password to all target machines, or you have public
   keys in place to allow passwordless access to them.
 

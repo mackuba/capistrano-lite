@@ -19,8 +19,8 @@ class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
     @config.put("some data", "test.txt", :mode => 0777)
   end
 
-  def test_get_should_delegate_to_download_with_once
-    @config.expects(:download).with("testr.txt", "testl.txt", :foo => "bar", :once => true)
+  def test_get_should_delegate_to_download
+    @config.expects(:download).with("testr.txt", "testl.txt", :foo => "bar")
     @config.get("testr.txt", "testl.txt", :foo => "bar")
   end
 
@@ -52,10 +52,10 @@ class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
     @config.download("testr.txt", "testl.txt", :foo => "bar")
   end
 
-  def test_transfer_should_invoke_transfer_on_matching_servers
-    @config.sessions = { :a => 1, :b => 2, :c => 3, :d => 4 }
-    @config.expects(:execute_on_servers).with(:foo => "bar").yields([:a, :b, :c])
-    Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", [1,2,3], {:foo => "bar", :logger => @config.logger})
+  def test_transfer_should_invoke_transfer_on_the_configured_server
+    @config.sessions = { :a => 1 }
+    @config.expects(:execute_on_servers).with(:foo => "bar").yields([:a])
+    Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", [1], {:foo => "bar", :logger => @config.logger})
     @config.transfer(:up, "testl.txt", "testr.txt", :foo => "bar")
   end
 end
