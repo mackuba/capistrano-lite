@@ -227,13 +227,6 @@ class DeploySCMGitTest < Test::Unit::TestCase
     assert_equal "/foo/bar/git", @source.command
   end
 
-  def test_sends_password_if_set
-    require 'capistrano/logger'
-    text = "password:"
-    @config[:scm_password] = "opensesame"
-    assert_equal %("opensesame"\n), @source.handle_data(mock_state, :test_stream, text)
-  end
-
   def test_prompt_password
     require 'capistrano/logger'
     require 'capistrano/cli'

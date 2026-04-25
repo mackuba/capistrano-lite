@@ -87,11 +87,7 @@ _cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates
 # If a .git directory exists in the project, it will set the :scm variable to
 # :git. If no supported directory is found, it will default to :none.
 def scm_default
-  if File.exist? '.git'
-    :git
-  else
-    :none
-  end
+  File.exist?('.git') ? :git : :none
 end
 
 # Auxiliary helper method for the `deploy:check' task. Lets you set up your own dependencies.

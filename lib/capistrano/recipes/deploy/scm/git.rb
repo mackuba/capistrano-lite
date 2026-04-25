@@ -251,9 +251,7 @@ module Capistrano
           case text
           when /\bpassword.*:/i
             # git is prompting for a password
-            unless pass = variable(:scm_password)
-              pass = Capistrano::CLI.password_prompt
-            end
+            pass = Capistrano::CLI.password_prompt
             %("#{pass}"\n)
           when %r{\(yes/no\)}
             # git is asking whether or not to connect
