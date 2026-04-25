@@ -11,6 +11,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     def initialize
       @original_initialize_called = true
       @values = {}
+      initialize_connections
     end
 
     def fetch(*args)

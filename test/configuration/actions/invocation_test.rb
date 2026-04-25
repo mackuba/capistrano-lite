@@ -12,6 +12,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     def initialize
       @options = {}
       @server = nil
+      initialize_invocation
     end
 
     def [](*args)

@@ -3,20 +3,13 @@ require 'capistrano/errors'
 module Capistrano
   class Configuration
     module Execution
-      def self.included(base) #:nodoc:
-        base.send :alias_method, :initialize_without_execution, :initialize
-        base.send :alias_method, :initialize, :initialize_with_execution
-      end
-
       # A struct for representing a single instance of an invoked task.
       TaskCallFrame = Struct.new(:task, :rollback)
 
-      def initialize_with_execution(*args) #:nodoc:
-        initialize_without_execution(*args)
+      def initialize_execution #:nodoc:
         @task_call_frames = []
         @rollback_requests = nil
       end
-      private :initialize_with_execution
 
       # Returns true if there is a transaction currently active.
       def transaction?

@@ -5,7 +5,7 @@ require 'capistrano/configuration/servers'
 class ConfigurationServersTest < Test::Unit::TestCase
   class MockConfig
     def initialize
-      @server = nil
+      initialize_servers
     end
 
     include Capistrano::Configuration::Servers

@@ -16,6 +16,7 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
       @fully_qualified_name = options[:fqn]
       @parent = options[:parent]
       @logger = options.delete(:logger)
+      initialize_execution
     end
 
     include Capistrano::Configuration::Execution

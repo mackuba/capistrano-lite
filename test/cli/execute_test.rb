@@ -1,15 +1,13 @@
 require "utils"
-require 'capistrano/cli/execute'
+require 'capistrano/cli'
 
 class CLIExecuteTest < Test::Unit::TestCase
-  class MockCLI
+  class MockCLI < Capistrano::CLI
     attr_reader :options
 
     def initialize
       @options = {}
     end
-
-    include Capistrano::CLI::Execute
   end
 
   def setup

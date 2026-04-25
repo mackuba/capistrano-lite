@@ -7,9 +7,6 @@ module Capistrano
         def self.included(base) #:nodoc:
           base.extend(ClassMethods)
 
-          base.send :alias_method, :initialize_without_invocation, :initialize
-          base.send :alias_method, :initialize, :initialize_with_invocation
-
           base.default_io_proc = Proc.new do |ch, stream, out|
             level = stream == :err ? :important : :info
             ch[:options][:logger].send(level, out, "#{stream} :: #{ch[:server]}")
@@ -20,8 +17,7 @@ module Capistrano
           attr_accessor :default_io_proc
         end
 
-        def initialize_with_invocation(*args) #:nodoc:
-          initialize_without_invocation(*args)
+        def initialize_invocation #:nodoc:
           set :default_environment, {}
           set :default_run_options, {}
         end

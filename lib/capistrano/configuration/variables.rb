@@ -2,7 +2,7 @@ module Capistrano
   class Configuration
     module Variables
       def self.included(base) #:nodoc:
-        %w(initialize respond_to? method_missing).each do |m|
+        %w(respond_to? method_missing).each do |m|
           base_name = m[/^\w+/]
           punct     = m[/\W+$/]
           base.send :alias_method, "#{base_name}_without_variables#{punct}", m
@@ -87,15 +87,13 @@ module Capistrano
         fetch(variable, nil)
       end
 
-      def initialize_with_variables(*args) #:nodoc:
-        initialize_without_variables(*args)
+      def initialize_variables #:nodoc:
         @variables = {}
         @original_procs = {}
 
         set :ssh_options, {}
         set :logger, logger
       end
-      private :initialize_with_variables
 
       def respond_to_with_variables?(sym, include_priv = false) #:nodoc:
         @variables.has_key?(sym.to_sym) || respond_to_without_variables?(sym, include_priv)

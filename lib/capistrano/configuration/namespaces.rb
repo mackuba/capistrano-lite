@@ -1,14 +1,10 @@
+require 'capistrano/configuration/alias_task'
 require 'capistrano/task_definition'
 
 module Capistrano
   class Configuration
     module Namespaces
       DEFAULT_TASK = :default
-
-      def self.included(base) #:nodoc:
-        base.send :alias_method, :initialize_without_namespaces, :initialize
-        base.send :alias_method, :initialize, :initialize_with_namespaces
-      end
 
       # The name of this namespace. Defaults to +nil+ for the top-level
       # namespace.
@@ -24,13 +20,12 @@ module Capistrano
       # The hash of namespaces defined for this namespace.
       attr_reader :namespaces
 
-      def initialize_with_namespaces(*args) #:nodoc:
-        @name = @parent = nil
-        initialize_without_namespaces(*args)
+      def initialize_namespaces(name = nil, parent = nil) #:nodoc:
+        @name = name
+        @parent = parent
         @tasks = {}
         @namespaces = {}
       end
-      private :initialize_with_namespaces
 
       # Returns the top-level namespace (the one with no parent).
       def top
@@ -174,8 +169,7 @@ module Capistrano
 
       class Namespace
         def initialize(name, parent)
-          @parent = parent
-          @name = name
+          initialize_namespaces(name, parent)
         end
 
         def respond_to?(sym, include_priv = false)

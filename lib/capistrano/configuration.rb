@@ -26,6 +26,15 @@ module Capistrano
       @debug = false
       @dry_run = false
       @logger = Logger.new(options)
+
+      initialize_connections
+      initialize_execution
+      initialize_loading
+      initialize_namespaces
+      initialize_servers
+      initialize_variables
+      initialize_invocation
+      initialize_callbacks
     end
 
     # make the DSL easier to read when using lazy evaluation via lambdas

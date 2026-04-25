@@ -17,14 +17,12 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | --- | --- | --- | --- |
 | `lib/capistrano.rb` | none directly | Main library entry point. Loads the configuration DSL, plugin extension system, and string helper. | `configuration`, `extensions`, `ext/string` |
 | `lib/capistrano/callback.rb` | `Capistrano::Callback`, `ProcCallback`, `TaskCallback` | Represents callbacks registered around task lifecycle events. `ProcCallback` calls a block, `TaskCallback` executes another Capistrano task and prevents direct self-recursion. | Used by `configuration/callbacks` |
-| `lib/capistrano/cli.rb` | `Capistrano::CLI` | Command-line facade that stores raw args and mixes in parsing, execution, UI, and help behavior. | `capistrano`, `cli/execute`, `cli/help`, `cli/options`, `cli/ui` |
-| `lib/capistrano/cli/execute.rb` | `Capistrano::CLI::Execute` | Turns parsed options into a `Configuration`, loads recipes, fires lifecycle hooks, executes requested actions, and handles top-level errors. | `configuration`; calls `Configuration`, `Callbacks`, task execution |
+| `lib/capistrano/cli.rb` | `Capistrano::CLI` | Command-line facade that stores raw args, exposes UI prompts, turns parsed options into a `Configuration`, loads recipes, fires lifecycle hooks, executes requested actions, and handles top-level errors. | `capistrano`, `cli/help`, `cli/options`, `configuration`, `highline` |
 | `lib/capistrano/cli/help.rb` | `Capistrano::CLI::Help` | Overrides CLI action execution for `-T` task listing and `-e` task explanation. Formats long help text. | Mixed into `CLI`; uses `TaskDefinition` data through `Configuration#task_list` and `#find_task` |
 | `lib/capistrano/cli/help.txt` | none | ERB-like help text used by `CLI::Help#long_help`. | Read by `cli/help` |
 | `lib/capistrano/cli/options.rb` | `Capistrano::CLI::Options` | Defines `OptionParser` switches, default config discovery, environment variable extraction, and simple value coercion for `-s` and `-S`. | Mixed into `CLI`; requires `optparse`; uses `Logger`, `Version`, `CLI.password_prompt` |
-| `lib/capistrano/cli/ui.rb` | `Capistrano::CLI::UI` | HighLine integration for password prompts, debug command confirmation, terminal dimensions, and paging. | `highline`; used by `cli/options`, `configuration/actions/invocation`, SCM adapters |
 | `lib/capistrano/command.rb` | `Capistrano::Command` | Single-session remote command runner. Opens one SSH command channel, handles stdout/stderr callbacks, optional pty, environment injection, placeholder replacement, and remote command errors. | `errors`, `processable`, `Configuration.default_io_proc`, SSH session from `connections` |
-| `lib/capistrano/configuration.rb` | `Capistrano::Configuration` | Central DSL object. Owns logger/debug/dry-run state, initializes the logger, mixes in all configuration and action modules, and unblocks namespace method shadowing. | `logger`; all `configuration/*`; `configuration/actions/*` |
+| `lib/capistrano/configuration.rb` | `Capistrano::Configuration` | Central DSL object. Owns logger/debug/dry-run state, explicitly calls each included module's initialization hook, mixes in all configuration and action modules, and unblocks namespace method shadowing. | `logger`; all `configuration/*`; `configuration/actions/*` |
 | `lib/capistrano/configuration/actions/file_transfer.rb` | `Capistrano::Configuration::Actions::FileTransfer` | Adds `put`, `get`, `upload`, `download`, and `transfer` DSL actions. Delegates actual work to `Capistrano::Transfer`. | `transfer`, `Connections#execute_on_server`, `Connections#session`, `run` |
 | `lib/capistrano/configuration/actions/inspect.rb` | `Capistrano::Configuration::Actions::Inspect` | Adds `stream` and `capture` actions for running commands and consuming streamed or captured single-server output. | `errors`, `Invocation#invoke_command`, `sudo` |
 | `lib/capistrano/configuration/actions/invocation.rb` | `Capistrano::Configuration::Actions::Invocation` | Adds `run`, `invoke_command`, `sudo`, command defaults, sudo prompt handling, and debug prompting. Converts DSL command calls into sequential `Command` execution. | `command`, `Servers#active_server`, `Connections#execute_on_server`, `CLI.debug_prompt`, `Variables` |
@@ -32,7 +30,7 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/configuration/callbacks.rb` | `Capistrano::Configuration::Callbacks` | Adds task lifecycle hooks: `before`, `after`, `on`, `trigger`. Wraps task invocation so callbacks fire around every direct task call. | `callback`, `Execution#invoke_task_directly`, `Execution#find_and_execute_task` |
 | `lib/capistrano/configuration/connections.rb` | `Capistrano::Configuration::Connections` | Manages the single SSH session, connection failure state, single-server connection establishment/teardown, and continuing after remote errors where requested. | `ssh`, `errors`, `Servers#active_server`, `Execution#current_task` |
 | `lib/capistrano/configuration/execution.rb` | `Capistrano::Configuration::Execution`, `TaskCallFrame` | Runs tasks, tracks the current task stack, implements transactions and `on_rollback`, and locates/executes tasks by name. | `errors`, `Namespaces`, `Callbacks` |
-| `lib/capistrano/configuration/loading.rb` | `Capistrano::Configuration::Loading`, `Loading::ClassMethods` | Loads recipes from files, strings, or procs. Provides a Capistrano-aware `require` that lets multiple configuration instances reload recipe DSL effects. | Used by `CLI::Execute`, recipes, extensions |
+| `lib/capistrano/configuration/loading.rb` | `Capistrano::Configuration::Loading`, `Loading::ClassMethods` | Loads recipes from files, strings, or procs. Provides a Capistrano-aware `require` that lets multiple configuration instances reload recipe DSL effects. | Used by `CLI`, recipes, extensions |
 | `lib/capistrano/configuration/log_formatters.rb` | `Capistrano::Configuration::LogFormatters` | DSL for adding logger formatters and disabling formatting. | `logger` |
 | `lib/capistrano/configuration/namespaces.rb` | `Capistrano::Configuration::Namespaces`, `Namespaces::Namespace`, `Kernel.method_added` hook | Implements `namespace`, `task`, `desc`, task lookup, namespace lookup, default tasks, and nested namespace forwarding to parent configuration. | `task_definition`, `alias_task`, `execution` |
 | `lib/capistrano/configuration/servers.rb` | `Capistrano::Configuration::Servers` | Adds the single-host `server` DSL and resolves the configured server, with `HOST` as a one-host environment override. | `ServerDefinition`, `errors` |
@@ -76,10 +74,8 @@ flowchart TD
   root --> string_ext["String#compact"]
 
   cli["Capistrano::CLI"] --> config
-  cli --> cli_execute["CLI::Execute"]
   cli --> cli_options["CLI::Options"]
   cli --> cli_help["CLI::Help"]
-  cli --> cli_ui["CLI::UI"]
 
   config --> variables["Configuration::Variables"]
   config --> namespaces["Configuration::Namespaces"]
@@ -128,8 +124,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | File | Internal files loaded directly |
 | --- | --- |
 | `lib/capistrano.rb` | `capistrano/configuration`, `capistrano/extensions`, `capistrano/ext/string` |
-| `lib/capistrano/cli.rb` | `capistrano`, `capistrano/cli/execute`, `capistrano/cli/help`, `capistrano/cli/options`, `capistrano/cli/ui` |
-| `lib/capistrano/cli/execute.rb` | `capistrano/configuration` |
+| `lib/capistrano/cli.rb` | `capistrano`, `capistrano/cli/help`, `capistrano/cli/options`, `capistrano/configuration` |
 | `lib/capistrano/cli/options.rb` | dynamically `capistrano/version` for `--version` |
 | `lib/capistrano/command.rb` | `capistrano/errors`, `capistrano/processable` |
 | `lib/capistrano/configuration.rb` | `capistrano/logger`; all `capistrano/configuration/*`; all `capistrano/configuration/actions/*` |
@@ -139,7 +134,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/configuration/callbacks.rb` | `capistrano/callback` |
 | `lib/capistrano/configuration/connections.rb` | `capistrano/ssh`, `capistrano/errors` |
 | `lib/capistrano/configuration/execution.rb` | `capistrano/errors` |
-| `lib/capistrano/configuration/namespaces.rb` | `capistrano/task_definition` |
+| `lib/capistrano/configuration/namespaces.rb` | `capistrano/configuration/alias_task`, `capistrano/task_definition` |
 | `lib/capistrano/configuration/servers.rb` | `capistrano/server_definition`, `capistrano/errors` |
 | `lib/capistrano/recipes/deploy.rb` | `capistrano/recipes/deploy/scm`, `capistrano/recipes/deploy/strategy` |
 | `lib/capistrano/recipes/deploy/assets.rb` | `load 'deploy'` unless `_cset` already exists |

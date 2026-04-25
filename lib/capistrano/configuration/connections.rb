@@ -4,15 +4,9 @@ require 'capistrano/errors'
 module Capistrano
   class Configuration
     module Connections
-      def self.included(base) #:nodoc:
-        base.send :alias_method, :initialize_without_connections, :initialize
-        base.send :alias_method, :initialize, :initialize_with_connections
-      end
-
       attr_accessor :session
 
-      def initialize_with_connections(*args) #:nodoc:
-        initialize_without_connections(*args)
+      def initialize_connections #:nodoc:
         @session = nil
         @failed = false
       end

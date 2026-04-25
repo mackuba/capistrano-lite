@@ -4,13 +4,7 @@ require 'capistrano/errors'
 module Capistrano
   class Configuration
     module Servers
-      def self.included(base) #:nodoc:
-        base.send :alias_method, :initialize_without_servers, :initialize
-        base.send :alias_method, :initialize, :initialize_with_servers
-      end
-
-      def initialize_with_servers(*args) #:nodoc:
-        initialize_without_servers(*args)
+      def initialize_servers #:nodoc:
         @server = nil
       end
 

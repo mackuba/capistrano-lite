@@ -8,6 +8,7 @@ class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
     def initialize
       @original_initialize_called = true
       @options = {}
+      initialize_namespaces
     end
 
     include Capistrano::Configuration::Namespaces

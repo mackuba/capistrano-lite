@@ -7,6 +7,7 @@ class ConfigurationVariablesTest < Test::Unit::TestCase
 
     def initialize
       @original_initialize_called = true
+      initialize_variables
     end
 
     include Capistrano::Configuration::Variables

@@ -9,6 +9,7 @@ class ConfigurationCallbacksTest < Test::Unit::TestCase
     def initialize
       @original_initialize_called = true
       @called = []
+      initialize_callbacks
     end
 
     def execute_task(task)

@@ -12,6 +12,8 @@ class AliasTaskTest < Test::Unit::TestCase
     def initialize(options = {})
       @options = {}
       @logger = options.delete(:logger)
+      initialize_execution
+      initialize_namespaces
     end
 
     include Capistrano::Configuration::AliasTask

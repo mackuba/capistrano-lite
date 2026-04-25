@@ -2,8 +2,6 @@ module Capistrano
   class Configuration
     module Loading
       def self.included(base) #:nodoc:
-        base.send :alias_method, :initialize_without_loading, :initialize
-        base.send :alias_method, :initialize, :initialize_with_loading
         base.extend ClassMethods
       end
 
@@ -52,12 +50,10 @@ module Capistrano
       # The load paths used for locating recipe files.
       attr_reader :load_paths
 
-      def initialize_with_loading(*args) #:nodoc:
-        initialize_without_loading(*args)
+      def initialize_loading #:nodoc:
         @load_paths = [".", File.expand_path(File.join(File.dirname(__FILE__), "../recipes"))]
         @loaded_features = []
       end
-      private :initialize_with_loading
 
       # Load a configuration file or string into this configuration.
       #

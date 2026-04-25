@@ -4,17 +4,14 @@ module Capistrano
   class Configuration
     module Callbacks
       def self.included(base) #:nodoc:
-        %w(initialize invoke_task_directly).each do |method|
-          base.send :alias_method, "#{method}_without_callbacks", method
-          base.send :alias_method, method, "#{method}_with_callbacks"
-        end
+        base.send :alias_method, :invoke_task_directly_without_callbacks, :invoke_task_directly
+        base.send :alias_method, :invoke_task_directly, :invoke_task_directly_with_callbacks
       end
 
       # The hash of callbacks that have been registered for this configuration
       attr_reader :callbacks
 
-      def initialize_with_callbacks(*args) #:nodoc:
-        initialize_without_callbacks(*args)
+      def initialize_callbacks #:nodoc:
         @callbacks = {}
       end
 

@@ -8,6 +8,7 @@ class ConfigurationLoadingTest < Test::Unit::TestCase
 
     def initialize
       @original_initialize_called = true
+      initialize_loading
     end
 
     def ping!(value)

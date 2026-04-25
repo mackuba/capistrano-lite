@@ -1,17 +1,15 @@
 require "utils"
-require 'capistrano/cli/options'
+require 'capistrano/cli'
 
 class CLIOptionsTest < Test::Unit::TestCase
   class ExitException < Exception; end
 
-  class MockCLI
-    def initialize
-      @args = []
+  class MockCLI < Capistrano::CLI
+    def initialize(args = [])
+      @args = args
     end
 
     attr_reader :args
-
-    include Capistrano::CLI::Options
   end
 
   def setup
