@@ -41,18 +41,6 @@ module Capistrano
         end
       end
 
-      # Destroys the session for the server.
-      def teardown_connection_to(server)
-        begin
-          if session
-            session.close
-            self.session = nil
-          end
-        rescue IOError, Net::SSH::Disconnect
-          # the TCP connection is already dead
-        end
-      end
-
       # Determines the configured server, establishes a connection to it, and
       # yields the server to the command and transfer layers.
       def execute_on_server(options = {})
