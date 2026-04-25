@@ -32,7 +32,6 @@ module Capistrano
       :hidden     => 8
     }
 
-    # Set up default formatters
     @default_formatters = [
       # TRACE
       { :match => /command finished/,          :color => :white,   :style => :dim, :level => 3, :priority => -10 },
@@ -51,6 +50,7 @@ module Capistrano
       { :match => /^err ::/,                   :color => :red,     :level => 0, :priority => -10 },
       { :match => /.*/,                        :color => :blue,    :level => 0, :priority => -20 }
     ]
+
     @formatters = @default_formatters
 
     class << self
@@ -79,6 +79,7 @@ module Capistrano
 
     def initialize(options = {})
       output = options[:output] || $stderr
+
       if output.respond_to?(:puts)
         @device = output
       else
@@ -97,6 +98,7 @@ module Capistrano
 
     def log(level, message, line_prefix = nil)
       if level <= self.level
+
         # Only format output if device is a TTY and formatters are not disabled
         if device.tty? && !@disable_formatters
           color = :none
@@ -134,7 +136,8 @@ module Capistrano
         end
 
         indent = "%*s" % [MAX_LEVEL, "*" * (MAX_LEVEL - level)]
-        (RUBY_VERSION >= "1.9" ? message.lines : message).each do |line|
+
+        message.lines.each do |line|
           if line_prefix
             device.puts "#{indent} [#{line_prefix}] #{line.strip}\n"
           else

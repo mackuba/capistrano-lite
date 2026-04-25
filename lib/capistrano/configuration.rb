@@ -15,10 +15,15 @@ require 'capistrano/configuration/actions/inspect'
 require 'capistrano/configuration/actions/invocation'
 
 module Capistrano
+
+  #
   # Represents a specific Capistrano configuration. A Configuration instance
   # may be used to load multiple recipe files, define and describe tasks,
   # define a server, and set configuration variables.
+  #
+
   class Configuration
+
     # The logger instance defined for this configuration.
     attr_accessor :debug, :logger, :dry_run
 

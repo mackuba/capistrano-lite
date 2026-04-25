@@ -14,17 +14,9 @@ module Capistrano
       new(direction, from, to, session, options, &block).process!
     end
 
-    attr_reader :session
-    attr_reader :options
-    attr_reader :callback
-
-    attr_reader :transport
-    attr_reader :direction
-    attr_reader :from
-    attr_reader :to
-
-    attr_reader :logger
-    attr_reader :transfer
+    attr_reader :session, :options, :callback
+    attr_reader :transport, :direction, :from, :to
+    attr_reader :logger, :transfer
 
     def initialize(direction, from, to, session, options = {}, &block)
       @direction = direction
@@ -91,21 +83,22 @@ module Capistrano
       end
     end
 
+
     private
 
     def prepare_transfer
       logger.info "#{transport} #{operation} #{from} -> #{to}" if logger
 
       session_from = normalize(from)
-      session_to   = normalize(to)
+      session_to = normalize(to)
 
       @transfer = case transport
-        when :sftp
-          prepare_sftp_transfer(session_from, session_to)
-        when :scp
-          prepare_scp_transfer(session_from, session_to)
-        else
-          raise ArgumentError, "unsupported transport type: #{transport.inspect}"
+      when :sftp
+        prepare_sftp_transfer(session_from, session_to)
+      when :scp
+        prepare_scp_transfer(session_from, session_to)
+      else
+        raise ArgumentError, "unsupported transport type: #{transport.inspect}"
       end
     end
 
@@ -115,18 +108,18 @@ module Capistrano
       end
 
       channel = case direction
-        when :up
-          session.scp.upload(from, to, options, &real_callback)
-        when :down
-          session.scp.download(from, to, options, &real_callback)
-        else
-          raise ArgumentError, "unsupported transfer direction: #{direction.inspect}"
-        end
+      when :up
+        session.scp.upload(from, to, options, &real_callback)
+      when :down
+        session.scp.download(from, to, options, &real_callback)
+      else
+        raise ArgumentError, "unsupported transfer direction: #{direction.inspect}"
+      end
 
       channel[:server] = session.xserver
-      channel[:host]   = session.xserver.host
+      channel[:host] = session.xserver.host
 
-      return channel
+      channel
     end
 
     class SFTPTransferWrapper
@@ -170,7 +163,8 @@ module Capistrano
         opts = options.dup
         opts[:properties] = (opts[:properties] || {}).merge(
           :server  => session.xserver,
-          :host    => session.xserver.host)
+          :host => session.xserver.host
+        )
 
         case direction
         when :up

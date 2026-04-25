@@ -43,6 +43,7 @@ module Capistrano
       rescue Exception => error
         raise SessionAssociation.on(error, session)
       end
+
       session
     end
   end

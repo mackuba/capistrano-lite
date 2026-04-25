@@ -8,20 +8,25 @@ module Capistrano
       end
 
       module ClassMethods
+
         # Used by third-party task bundles to identify the capistrano
         # configuration that is loading them. Its return value is not reliable
         # in other contexts. If +require_config+ is not false, an exception
         # will be raised if the current configuration is not set.
+
         def instance(require_config = false)
           config = @instance
+
           if require_config && config.nil?
             raise LoadError, "Please require this file from within a Capistrano recipe"
           end
+
           config
         end
 
         # Used internally by Capistrano to specify the current configuration
         # before loading a third-party task bundle.
+
         def instance=(config)
           @instance = config
         end
@@ -29,6 +34,7 @@ module Capistrano
         # Used internally by Capistrano to track which recipes have been loaded
         # via require, so that they may be successfully reloaded when require
         # is called again.
+
         def recipes_per_feature
           @recipes_per_feature ||= {}
         end
@@ -36,6 +42,7 @@ module Capistrano
         # Used internally to determine what the current "feature" being
         # required is. This is used to track which files load which recipes
         # via require.
+
         def current_feature
           @current_feature
         end
@@ -44,6 +51,7 @@ module Capistrano
         # any recipes loaded by that file can be remembered. This allows
         # recipes loaded via require to be correctly reloaded in different
         # Configuration instances in the same Ruby instance.
+
         def current_feature=(feature)
           @current_feature = feature
         end
@@ -53,7 +61,7 @@ module Capistrano
       attr_reader :load_paths
 
       def initialize_loading #:nodoc:
-        @load_paths = [".", File.expand_path(File.join(File.dirname(__FILE__), "../recipes"))]
+        @load_paths = ['.', File.expand_path(File.join(File.dirname(__FILE__), '../recipes'))]
         @loaded_features = []
       end
 
@@ -73,6 +81,7 @@ module Capistrano
       #
       #   load { ... }
       #     Load the block in the context of the configuration.
+
       def load(*args, &block)
         options = args.last.is_a?(Hash) ? args.pop : {}
 
@@ -135,7 +144,8 @@ module Capistrano
       # required multiple times, but that will cause warnings (and possibly
       # errors) if the file to be required contains constant definitions and
       # such, alongside (or instead of) capistrano recipe definitions.
-      def require(*args) #:nodoc:
+
+      def require(*args)
         # look to see if this specific configuration instance has ever seen
         # these arguments to require before
         if @loaded_features.include?(args)
@@ -143,11 +153,13 @@ module Capistrano
         end
 
         @loaded_features << args
+
         begin
           original_instance, self.class.instance = self.class.instance, self
           original_feature, self.class.current_feature = self.class.current_feature, args
 
           result = super
+
           if !result # file has been required previously, load up the remembered recipes
             list = self.class.recipes_per_feature[args] || []
             list.each { |options| load(options.merge(:reloading => true)) }
@@ -173,6 +185,7 @@ module Capistrano
 
       # Load a recipe from the named file. If +name+ is given, the file will
       # be reported using that name.
+
       def load_from_file(file, name = nil)
         file = find_file_in_load_path(file) unless File.file?(file)
         load :string => File.read(file), :name => name || file
@@ -180,7 +193,7 @@ module Capistrano
 
       def find_file_in_load_path(file)
         load_paths.each do |path|
-          ["", ".rb"].each do |ext|
+          ['', '.rb'].each do |ext|
             name = File.join(path, "#{file}#{ext}")
             return name if File.file?(name)
           end
@@ -192,6 +205,7 @@ module Capistrano
       # If a file is being required, the options associated with loading a
       # recipe are remembered in the recipes_per_feature archive under the
       # name of the file currently being required.
+
       def remember_load(options)
         if self.class.current_feature
           list = (self.class.recipes_per_feature[self.class.current_feature] ||= [])

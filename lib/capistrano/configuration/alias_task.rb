@@ -3,6 +3,7 @@
 module Capistrano
   class Configuration
     module AliasTask
+
       # Attempts to find the task at the given fully-qualified path, and
       # alias it. If arguments don't have correct task names, an ArgumentError
       # will be raised. If no such task exists, a Capistrano::NoSuchTaskError
@@ -11,9 +12,9 @@ module Capistrano
       # Usage:
       #
       #   alias_task :original_deploy, :deploy
-      #
+
       def alias_task(new_name, old_name)
-        if !new_name.respond_to?(:to_sym) or !old_name.respond_to?(:to_sym)
+        if !new_name.respond_to?(:to_sym) || !old_name.respond_to?(:to_sym)
           raise ArgumentError, "expected a valid task name"
         end
 

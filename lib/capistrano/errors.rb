@@ -1,5 +1,4 @@
 module Capistrano
-
   Error = Class.new(RuntimeError)
 
   CaptureError            = Class.new(Capistrano::Error)
@@ -15,5 +14,4 @@ module Capistrano
   CommandError        = Class.new(Capistrano::RemoteError)
 
   LocalArgumentError  = Class.new(Capistrano::Error)
-
 end

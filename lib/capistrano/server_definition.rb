@@ -33,9 +33,7 @@ module Capistrano
     # Redefined, so that Array#uniq will work to remove duplicate server
     # definitions, based solely on their host names.
     def eql?(server)
-      host == server.host &&
-        user == server.user &&
-        port == server.port
+      (host == server.host) && (user == server.user) && (port == server.port)
     end
 
     alias :== :eql?

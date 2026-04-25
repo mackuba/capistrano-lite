@@ -92,6 +92,7 @@ module Capistrano
 
     def execute!
       config = instantiate_configuration(options)
+
       config.debug = options[:debug]
       config.dry_run = options[:dry_run]
       config.logger.level = options[:verbose]
@@ -123,7 +124,7 @@ module Capistrano
 
     def load_recipes(config) #:nodoc:
       # load the standard recipe definition
-      config.load "standard"
+      config.load 'standard'
 
       # load systemwide config/recipe definition
       config.load(options[:sysconf]) if options[:sysconf] && File.file?(options[:sysconf])
@@ -137,7 +138,7 @@ module Capistrano
     # Primarily useful for testing, but subclasses of CLI could conceivably
     # override this method to return a Configuration subclass or replacement.
 
-    def instantiate_configuration(options = {}) #:nodoc:
+    def instantiate_configuration(options = {})
       Capistrano::Configuration.new(options)
     end
 
@@ -147,7 +148,8 @@ module Capistrano
         abort "authentication failed for `#{error.message}'"
       when Capistrano::Error
         abort(error.message)
-      else raise error
+      else
+        raise error
       end
     end
 

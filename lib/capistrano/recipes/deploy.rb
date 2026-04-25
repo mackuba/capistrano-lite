@@ -78,6 +78,7 @@ _cset(:latest_release) { exists?(:deploy_timestamped) ? release_path : current_r
 
 _cset :maintenance_basename, "maintenance"
 _cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates", "maintenance.rhtml") }
+
 # =========================================================================
 # These are helper methods that will be available to your recipes.
 # =========================================================================
@@ -93,8 +94,7 @@ def scm_default
   end
 end
 
-# Auxiliary helper method for the `deploy:check' task. Lets you set up your
-# own dependencies.
+# Auxiliary helper method for the `deploy:check' task. Lets you set up your own dependencies.
 def depend(location, type, *args)
   deps = fetch(:dependencies, {})
   deps[location] ||= {}
@@ -103,8 +103,7 @@ def depend(location, type, *args)
   set :dependencies, deps
 end
 
-# Temporarily sets an environment variable, yields to a block, and restores
-# the value when it is done.
+# Temporarily sets an environment variable, yields to a block, and restores the value when it is done.
 def with_env(name, value)
   saved, ENV[name] = ENV[name], value
   yield
@@ -112,20 +111,23 @@ ensure
   ENV[name] = saved
 end
 
-# logs the command then executes it locally.
-# returns the command output as a string
+# Logs the command then executes it locally. Returns the command output as a string.
 def run_locally(cmd)
   if dry_run
     return logger.debug "executing locally: #{cmd.inspect}"
   end
+
   logger.trace "executing locally: #{cmd.inspect}" if logger
   output_on_stdout = nil
+
   elapsed = Benchmark.realtime do
     output_on_stdout = `#{cmd}`
   end
+
   if $?.to_i > 0 # $? is command exit code (posix style)
     raise Capistrano::LocalArgumentError, "Command #{cmd} returned status code #{$?}"
   end
+
   logger.trace "command finished in #{(elapsed * 1000).round}ms" if logger
   output_on_stdout
 end
@@ -146,6 +148,7 @@ end
 # someone else, you'd just do try_sudo('something', :as => "bob"). If you
 # always wanted sudo to run as a particular user, you could do
 # set(:admin_runner, "bob").
+
 def try_sudo(*args)
   options = args.last.is_a?(Hash) ? args.pop : {}
   command = args.shift
@@ -153,6 +156,7 @@ def try_sudo(*args)
 
   as = options.fetch(:as, fetch(:admin_runner, nil))
   via = fetch(:run_method, :sudo)
+
   if command
     invoke_command(command, :via => via, :as => as)
   elsif via == :sudo
@@ -162,8 +166,7 @@ def try_sudo(*args)
   end
 end
 
-# Same as sudo, but tries sudo with :as set to the value of the :runner
-# variable (which defaults to "app").
+# Same as sudo, but tries sudo with :as set to the value of the :runner variable (which defaults to "app").
 def try_runner(*args)
   options = args.last.is_a?(Hash) ? args.pop : {}
   args << options.merge(:as => fetch(:runner, "app"))
@@ -183,6 +186,7 @@ namespace :deploy do
     once. For a "cold" deploy, you'll want to take a look at the `deploy:cold' \
     task, which handles the cold start specifically.
   DESC
+
   task :default do
     update
     restart
@@ -200,6 +204,7 @@ namespace :deploy do
     It is safe to run this task on a server that has already been set up; it \
     will not destroy any deployed revisions or data.
   DESC
+
   task :setup do
     dirs = [deploy_to, releases_path, shared_path]
     dirs += shared_children.map { |d| File.join(shared_path, d.split('/').last) }
@@ -215,6 +220,7 @@ namespace :deploy do
     you will want to call `deploy' instead of `update', but `update' can be \
     handy if you want to deploy, but not immediately restart your application.
   DESC
+
   task :update do
     transaction do
       update_code
@@ -234,6 +240,7 @@ namespace :deploy do
     is present, and :none otherwise), and the :deploy_via variable to the \
     strategy you want to use to deploy (it defaults to :remote_cache).
   DESC
+
   task :update_code do
     on_rollback { run "rm -rf #{release_path}; true" }
     strategy.deploy!
@@ -256,6 +263,7 @@ namespace :deploy do
     set to true, which is the default. The asset directories can be overridden \
     using the :public_children variable.
   DESC
+
   task :finalize_update do
     escaped_release = latest_release.to_s.shellescape
     commands = []
@@ -265,12 +273,16 @@ namespace :deploy do
     # save empty folders
     shared_children.map do |dir|
       d = dir.shellescape
+
       if (dir.rindex('/')) then
-        commands += ["rm -rf -- #{escaped_release}/#{d}",
-                     "mkdir -p -- #{escaped_release}/#{dir.slice(0..(dir.rindex('/'))).shellescape}"]
+        commands += [
+          "rm -rf -- #{escaped_release}/#{d}",
+          "mkdir -p -- #{escaped_release}/#{dir.slice(0..(dir.rindex('/'))).shellescape}"
+        ]
       else
         commands << "rm -rf -- #{escaped_release}/#{d}"
       end
+
       commands << "ln -s -- #{shared_path}/#{dir.split('/').last.shellescape} #{escaped_release}/#{d}"
     end
 
@@ -278,11 +290,14 @@ namespace :deploy do
 
     if fetch(:normalize_asset_timestamps, true)
       stamp = Time.now.utc.strftime("%Y%m%d%H%M.%S")
+
       asset_paths = fetch(:public_children, %w(images stylesheets javascripts)).
         map { |p| "#{latest_release}/public/#{p}" }.
         map { |p| p.shellescape }
-      run("find #{asset_paths.join(" ")} -exec touch -t #{stamp} -- {} ';'; true",
-          :env => { "TZ" => "UTC" }) if asset_paths.any?
+
+      if asset_paths.any?
+        run("find #{asset_paths.join(" ")} -exec touch -t #{stamp} -- {} ';'; true", :env => { "TZ" => "UTC" })
+      end
     end
   end
 
@@ -295,6 +310,7 @@ namespace :deploy do
     deploy, including `restart') or the 'update' task (which does everything \
     except `restart').
   DESC
+
   task :create_symlink do
     on_rollback do
       if previous_release
@@ -325,6 +341,7 @@ namespace :deploy do
 
       $ cap deploy:upload FILES='config/apache/*.conf'
   DESC
+
   task :upload do
     files = (ENV["FILES"] || "").split(",").map { |f| Dir[f.strip] }.flatten
     abort "Please specify at least one file or directory to update (via the FILES environment variable)" if files.empty?
@@ -336,6 +353,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
+
   task :restart do
     # Empty Task to overload with your platform specifics
   end
@@ -346,6 +364,7 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely (if
       ever) need to be called directly.
     DESC
+
     task :revision do
       if previous_release
         run "#{try_sudo} rm #{current_path}; #{try_sudo} ln -s #{previous_release} #{current_path}"
@@ -359,6 +378,7 @@ namespace :deploy do
       This is called by the rollback sequence, and should rarely
       (if ever) need to be called directly.
     DESC
+
     task :cleanup do
       run "if [ `readlink #{current_path}` != #{current_release} ]; then #{try_sudo} rm -rf #{current_release}; fi"
     end
@@ -369,6 +389,7 @@ namespace :deploy do
       current release will be removed from the server. You'll generally want \
       to call `rollback' instead, as it performs a `restart' as well.
     DESC
+
     task :code do
       revision
       cleanup
@@ -379,6 +400,7 @@ namespace :deploy do
       discover that you've deployed a lemon; `cap rollback' and you're right \
       back where you were, on the previously deployed version.
     DESC
+
     task :default do
       revision
       restart
@@ -401,6 +423,7 @@ namespace :deploy do
       set :migrate_env,    ""
       set :migrate_target, :latest
   DESC
+
   task :migrate do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
@@ -411,7 +434,7 @@ namespace :deploy do
       when :current then current_path
       when :latest  then latest_release
       else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
-      end
+    end
 
     run "cd #{directory} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
   end
@@ -423,6 +446,7 @@ namespace :deploy do
     update in this case it is not atomic, and transactions are not used, \
     because migrations are not guaranteed to be reversible.
   DESC
+
   task :migrations do
     set :migrate_target, :latest
     update_code
@@ -438,6 +462,7 @@ namespace :deploy do
     will use sudo to clean up the old releases, but if sudo is not available \
     for your environment, set the :use_sudo variable to false instead.
   DESC
+
   task :cleanup do
     count = fetch(:keep_releases, 5).to_i
     try_sudo "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
@@ -455,6 +480,7 @@ namespace :deploy do
       depend :local, :command, "svn"
       depend :remote, :directory, "/u/depot/files"
   DESC
+
   task :check do
     dependencies = strategy.check!
 
@@ -475,9 +501,11 @@ namespace :deploy do
       puts "You appear to have all necessary dependencies installed"
     else
       puts "The following dependencies failed. Please check them and try again:"
+
       dependencies.reject { |d| d.pass? }.each do |d|
         puts "--> #{d.message}"
       end
+
       abort
     end
   end
@@ -489,6 +517,7 @@ namespace :deploy do
     pending migrations, and then instead of invoking `deploy:restart', it will \
     invoke `deploy:start' to fire up the application servers.
   DESC
+
   task :cold do
     update
     migrate
@@ -499,6 +528,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
+
   task :start do
     # Empty Task to overload with your platform specifics
   end
@@ -507,6 +537,7 @@ namespace :deploy do
     Blank task exists as a hook into which to install your own environment \
     specific behaviour.
   DESC
+
   task :stop do
     # Empty Task to overload with your platform specifics
   end
@@ -517,6 +548,7 @@ namespace :deploy do
       to examine what changes are about to be deployed. Note that this might \
       not be supported on all SCM's.
     DESC
+
     task :diff do
       system(source.local.diff(current_revision))
     end
@@ -526,6 +558,7 @@ namespace :deploy do
       of the changes that have occurred since the last deploy. Note that this \
       might not be supported on all SCM's.
     DESC
+
     task :default do
       from = source.next_revision(current_revision)
       system(source.local.log(from))
@@ -553,6 +586,7 @@ namespace :deploy do
 
       Further customization will require that you write your own task.
     DESC
+
     task :disable do
       require 'erb'
       on_rollback { run "rm -f #{shared_path}/system/#{maintenance_basename}.html" }
@@ -596,6 +630,7 @@ namespace :deploy do
       web server is configured correctly) will make your application \
       web-accessible again.
     DESC
+
     task :enable do
       run "rm -f #{shared_path}/system/#{maintenance_basename}.html"
     end

@@ -5,7 +5,6 @@ require 'capistrano/server_definition'
 module Capistrano
 
   class TaskDefinition
-
     attr_reader :name, :namespace, :options, :body, :desc, :on_error
 
     def initialize(name, namespace, options = {}, &block)
@@ -34,8 +33,10 @@ module Capistrano
     # Returns the description for this task, with newlines collapsed and
     # whitespace stripped. Returns the empty string if there is no
     # description for this task.
+
     def description(rebuild = false)
       @description = nil if rebuild
+
       @description ||= begin
         description = @desc || ""
 
@@ -60,6 +61,7 @@ module Capistrano
     # Returns the first sentence of the full description. If +max_length+ is
     # given, the result will be truncated if it is longer than +max_length+,
     # and an ellipsis appended.
+
     def brief_description(max_length = nil)
       brief = description[/^.*?\.(?=\s|$)/] || description
 
@@ -72,9 +74,9 @@ module Capistrano
 
     # Indicates whether the task wants to continue, even if a server has failed
     # previously
+
     def continue_on_error?
       @on_error == :continue
     end
-
   end
 end

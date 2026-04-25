@@ -12,13 +12,13 @@ module Capistrano
     end
   end
 
-  # Holds the set of registered plugins, keyed by name (where the name is a
-  # symbol).
+  # Holds the set of registered plugins, keyed by name (where the name is a symbol).
   EXTENSIONS = {}
 
   # Register the given module as a plugin with the given name. It will henceforth
   # be available via a proxy object on Configuration instances, accessible by
   # a method with the given name.
+
   def self.plugin(name, mod)
     name = name.to_sym
     return false if EXTENSIONS.has_key?(name)
@@ -42,8 +42,10 @@ module Capistrano
   end
 
   # Unregister the plugin with the given name.
+
   def self.remove_plugin(name)
     name = name.to_sym
+
     if EXTENSIONS.delete(name)
       Capistrano::Configuration.send(:remove_method, name)
       return true
@@ -51,5 +53,4 @@ module Capistrano
 
     return false
   end
-
 end

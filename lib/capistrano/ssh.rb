@@ -1,8 +1,13 @@
 require 'net/ssh'
 
 module Capistrano
+
+  #
   # A helper class for dealing with SSH connections.
+  #
+
   class SSH
+
     # Patch an accessor onto an SSH connection so that we can record the server
     # definition object that defines the connection.
     module Server #:nodoc:
@@ -26,6 +31,7 @@ module Capistrano
     # constructor. Values in +options+ are then merged into it, and any
     # connection information in +server+ is added last, so that +server+ info
     # takes precedence over +options+, which takes precendence over ssh_options.
+
     def self.connect(server, options = {})
       connection_strategy(server, options) do |host, user, connection_options|
         connection = Net::SSH.start(host, user, connection_options)
@@ -37,7 +43,9 @@ module Capistrano
     #
     # This will yield the hostname, username, and a hash of connection options
     # to the given block, which should return a new connection.
+
     def self.connection_strategy(server, options = {}, &block)
+
       # construct the hash of ssh options that should be passed more-or-less
       # directly to Net::SSH. This will be the general ssh options, merged with
       # the server-specific ssh-options.
@@ -54,8 +62,7 @@ module Capistrano
 
       ssh_options[:verbose] = :debug if options[:verbose] && options[:verbose] > 0
 
-      user = server.user || options[:user] || ssh_options[:username] ||
-             ssh_options[:user] || ServerDefinition.default_user
+      user = server.user || options[:user] || ssh_options[:username] || ssh_options[:user] || ServerDefinition.default_user
       port = server.port || options[:port] || ssh_options[:port]
 
       # the .ssh/config file might have changed the host-name on us
@@ -67,7 +74,7 @@ module Capistrano
       ssh_options.delete(:username)
       ssh_options.delete(:user)
 
-      connection_options = ssh_options.merge(:auth_methods => %w(publickey))
+      connection_options = ssh_options.merge(:auth_methods => ['publickey'])
       yield host, user, connection_options
     end
   end

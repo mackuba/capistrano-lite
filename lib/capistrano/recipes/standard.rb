@@ -14,6 +14,7 @@ desc <<-DESC
     $ cap COMMAND=uptime HOST=foo.capistano.test invoke
     $ cap HOST=app1.example.com SUDO=1 COMMAND="tail -f /var/log/messages" invoke
 DESC
+
 task :invoke do
   command = ENV["COMMAND"] || ""
   abort "Please specify a command to execute on the remote server (via the COMMAND environment variable)" if command.empty?

@@ -18,11 +18,8 @@ module Capistrano
       end
 
       def invoke_task_directly_with_callbacks(task) #:nodoc:
-
         trigger :before, task
-
         result = invoke_task_directly_without_callbacks(task)
-
         trigger :after, task
 
         return result
@@ -41,9 +38,11 @@ module Capistrano
       #   end
       #
       # This just provides a convenient interface to the more general #on method.
+
       def before(task_name, *args, &block)
         options = args.last.is_a?(Hash) ? args.pop : {}
         args << options.merge(:only => task_name)
+
         on :before, *args, &block
       end
 
@@ -60,9 +59,11 @@ module Capistrano
       #   end
       #
       # This just provides a convenient interface to the more general #on method.
+
       def after(task_name, *args, &block)
         options = args.last.is_a?(Hash) ? args.pop : {}
         args << options.merge(:only => task_name)
+
         on :after, *args, &block
       end
 
@@ -94,6 +95,7 @@ module Capistrano
       #  on :after, :only => :deploy do
       #    puts "after deploy here"
       #  end
+
       def on(event, *args, &block)
         options = args.last.is_a?(Hash) ? args.pop : {}
         callbacks[event] ||= []
@@ -111,8 +113,10 @@ module Capistrano
 
       # Trigger the named event for the named task. All associated callbacks
       # will be fired, in the order they were defined.
+
       def trigger(event, task = nil)
         pending = Array(callbacks[event]).select { |c| c.applies_to?(task) }
+
         if pending.any?
           msg = "triggering #{event} callbacks"
           msg << " for `#{task.fully_qualified_name}'" if task
@@ -120,7 +124,6 @@ module Capistrano
           pending.each { |callback| callback.call }
         end
       end
-
     end
   end
 end

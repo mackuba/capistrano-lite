@@ -45,7 +45,7 @@ class LoggerFormattingTest < Test::Unit::TestCase
   def test_prepending_timestamps
     Capistrano::Logger.formatters = [{ :match => /.*/, :level => 0, :timestamp => true }]
     @logger.log(0, "test message")
-    assert @io.string.match /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} test message/
+    assert @io.string.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} test message/)
   end
 
   def test_formatter_priorities

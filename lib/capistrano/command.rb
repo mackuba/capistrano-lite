@@ -6,7 +6,10 @@ require 'capistrano/processable'
 
 module Capistrano
 
+  #
   # This class encapsulates a single command to be executed on a remote machine.
+  #
+
   class Command
     include Processable
 
@@ -24,6 +27,7 @@ module Capistrano
     # * +data+: (optional), a string to be sent to the command via it's stdin
     # * +env+: (optional), a string or hash to be interpreted as environment
     #   variables that should be defined for this command invocation.
+
     def initialize(command, session, options = {}, &block)
       @command = command.strip.gsub(/\r?\n/, "\\\n")
       @session = session
@@ -33,9 +37,11 @@ module Capistrano
 
     # Processes the command. If the command fails (non-zero return code), this
     # will raise a Capistrano::CommandError.
+
     def process!
       elapsed = Benchmark.realtime do
         open_channel(session)
+
         loop do
           break unless process_iteration { !channel[:closed] }
         end
@@ -55,9 +61,11 @@ module Capistrano
 
     # Force the command to stop processing, by closing the open channel
     # associated with this command.
+
     def stop!
       channel.close if channel && !channel[:closed]
     end
+
 
     private
 
@@ -152,6 +160,7 @@ module Capistrano
     #                        'TEST' => '( "quoted" )'}
     # environment returns:
     # "env TEST=(\ \"quoted\"\ ) PATH=/opt/ruby/bin:$PATH"
+
     def environment
       return if options[:env].nil? || options[:env].empty?
 

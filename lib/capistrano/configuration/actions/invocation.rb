@@ -10,7 +10,7 @@ module Capistrano
           base.extend(ClassMethods)
 
           base.default_io_proc = Proc.new do |ch, stream, out|
-            level = stream == :err ? :important : :info
+            level = (stream == :err) ? :important : :info
             ch[:options][:logger].send(level, out, "#{stream} :: #{ch[:server]}")
           end
         end
@@ -28,6 +28,7 @@ module Capistrano
         # to determine what method to use to invoke the command. It defaults
         # to :run, but may be :sudo, or any other method that conforms to the
         # same interface as run and sudo.
+
         def invoke_command(cmd, options = {}, &block)
           options = options.dup
           via = options.delete(:via) || :run
@@ -67,10 +68,12 @@ module Capistrano
         # Note that if you set these keys in the +default_run_options+ Capistrano
         # variable, they will apply for all invocations of #run and
         # #invoke_command.
+
         def run(cmd, options = {}, &block)
           if options[:eof].nil? && !cmd.include?(sudo)
             options = options.merge(:eof => !block_given?)
           end
+
           block ||= self.class.default_io_proc
           options = add_default_command_options(options)
 
@@ -112,6 +115,7 @@ module Capistrano
         # a password. (This is so that capistrano knows what prompt to look for
         # in the output.) If you set :sudo_prompt to an empty string, Capistrano
         # will not send a preferred prompt.
+
         def sudo(*parameters, &block)
           options = parameters.last.is_a?(Hash) ? parameters.pop.dup : {}
           command = parameters.first
@@ -132,6 +136,7 @@ module Capistrano
         # callback. The returned Proc will defer to the +fallback+ argument
         # (which should also be a Proc) for any output it does not
         # explicitly handle.
+
         def sudo_behavior_callback(fallback) #:nodoc:
           # in order to prevent _each host_ from prompting when the password
           # was wrong, let's track which host prompted first and only allow
@@ -165,6 +170,7 @@ module Capistrano
         # * :default_shell: if the :shell key already exists, it will be used.
         #   Otherwise, if the :default_shell key exists in the configuration,
         #   it will be used. Otherwise, no :shell key is added.
+
         def add_default_command_options(options)
           defaults = self[:default_run_options]
           options = defaults.merge(options)
@@ -186,15 +192,11 @@ module Capistrano
 
         def continue_execution(command)
           case Capistrano::CLI.debug_prompt(command.inspect)
-            when "y"
-              true
-            when "n"
-              false
-            when "a"
-              exit(-1)
+          when "y" then true
+          when "n" then false
+          when "a" then exit(-1)
           end
         end
-
       end
     end
   end

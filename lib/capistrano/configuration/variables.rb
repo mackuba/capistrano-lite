@@ -12,8 +12,7 @@ module Capistrano
         end
       end
 
-      # The hash of variables that have been defined in this configuration
-      # instance.
+      # The hash of variables that have been defined in this configuration instance.
       attr_reader :variables
 
       # Set a variable to the given value.
@@ -54,6 +53,7 @@ module Capistrano
       # true if the variable was actually reset.
       def reset!(variable)
         sym = variable.to_sym
+
         if @original_procs.key?(sym)
           @variables[sym] = @original_procs.delete(sym)
           true
@@ -65,12 +65,14 @@ module Capistrano
       # Access a named variable. If the value of the variable responds_to? :call,
       # #call will be invoked (without parameters) and the return value cached
       # and returned.
+
       def fetch(variable, *args)
         if !args.empty? && block_given?
           raise ArgumentError, "you must specify either a default value or a block, but not both"
         end
 
         sym = variable.to_sym
+
         if !@variables.key?(sym)
           return args.first unless args.empty?
           return yield(variable) if block_given?

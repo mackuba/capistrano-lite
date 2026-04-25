@@ -109,7 +109,7 @@ module Capistrano
 
         def execute(description, &block)
           logger.debug description
-          handle_system_errors &block
+          handle_system_errors(&block)
         end
 
         def handle_system_errors(&block)

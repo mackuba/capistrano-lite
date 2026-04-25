@@ -34,6 +34,7 @@ module Capistrano
       # exception), all tasks executed within the transaction are inspected to
       # see if they have an associated on_rollback hook, and if so, that hook
       # is called.
+
       def transaction
         raise ArgumentError, "expected a block" unless block_given?
         raise ScriptError, "transaction must be called from within a task" if task_call_frames.empty?
@@ -41,11 +42,12 @@ module Capistrano
         return yield if transaction?
 
         logger.info "transaction: start"
+
         begin
           self.rollback_requests = []
           yield
           logger.info "transaction: commit"
-        rescue Object => e
+        rescue Object
           rollback!
           raise
         ensure
@@ -56,6 +58,7 @@ module Capistrano
       # Specifies an on_rollback hook for the currently executing task. If this
       # or any subsequent task then fails, and a transaction is active, this
       # hook will be executed.
+
       def on_rollback(&block)
         if transaction?
           # don't note a new rollback request if one has already been set
@@ -66,13 +69,14 @@ module Capistrano
 
       # Returns the TaskDefinition object for the currently executing task.
       # It returns nil if there is no task being executed.
+
       def current_task
         return nil if task_call_frames.empty?
         task_call_frames.last.task
       end
 
-      # Executes the task with the given name, without invoking any associated
-      # callbacks.
+      # Executes the task with the given name, without invoking any associated callbacks.
+
       def execute_task(task)
         logger.debug "executing `#{task.fully_qualified_name}'"
         push_task_call_frame(task)
@@ -84,6 +88,7 @@ module Capistrano
       # Attempts to locate the task at the given fully-qualified path, and
       # execute it. If no such task exists, a Capistrano::NoSuchTaskError will
       # be raised.
+
       def find_and_execute_task(path, hooks = {})
         task = find_task(path) or raise NoSuchTaskError, "the task `#{path}' does not exist"
 
@@ -94,6 +99,7 @@ module Capistrano
         result
       end
 
+
       protected
 
       def rollback!
@@ -101,6 +107,7 @@ module Capistrano
 
         # throw the task back on the stack so that roles are properly
         # interpreted in the scope of the task in question.
+
         rollback_requests.reverse.each do |frame|
           begin
             push_task_call_frame(frame.task)

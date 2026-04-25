@@ -120,7 +120,7 @@ class DeploySCMGitTest < Test::Unit::TestCase
 
   def test_query_revision_deprecation_error
     assert_raise(ArgumentError) do
-      revision = @source.query_revision('origin/release') {}
+      @source.query_revision('origin/release') {}
     end
   end
 

@@ -125,10 +125,16 @@ module Capistrano
       # If the arguments to the command are empty, this will print the
       # allowed options and exit. Otherwise, it will parse the command
       # line and set up any default options.
-      def parse_options! #:nodoc:
-        @options = { :recipes => [], :actions => [],
-          :vars => {}, :pre_vars => {},
-          :sysconf => default_sysconf, :dotfile => default_dotfile }
+
+      def parse_options!
+        @options = {
+          :recipes => [],
+          :actions => [],
+          :vars => {},
+          :pre_vars => {},
+          :sysconf => default_sysconf,
+          :dotfile => default_dotfile
+        }
 
         if args.empty?
           warn "Please specify at least one action to execute."
@@ -155,7 +161,8 @@ module Capistrano
 
       # Extracts name=value pairs from the remaining command-line arguments
       # and assigns them as environment variables.
-      def extract_environment_variables! #:nodoc:
+
+      def extract_environment_variables!
         args.delete_if do |arg|
           next unless arg.match(/^(\w+)=(.*)$/)
           ENV[$1] = $2
@@ -163,7 +170,8 @@ module Capistrano
       end
 
       # Looks for a default recipe file in the current directory.
-      def look_for_default_recipe_file! #:nodoc:
+
+      def look_for_default_recipe_file!
         current = Dir.pwd
 
         loop do

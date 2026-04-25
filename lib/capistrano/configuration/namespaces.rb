@@ -31,15 +31,17 @@ module Capistrano
 
       # Returns the top-level namespace (the one with no parent).
       def top
-        return parent.top if parent
-        return self
+        parent ? parent.top : self
       end
 
       # Returns the fully-qualified name of this namespace, or nil if the
       # namespace is at the top-level.
       def fully_qualified_name
-        return nil if name.nil?
-        [parent.fully_qualified_name, name].compact.join(":")
+        if name
+          [parent.fully_qualified_name, name].compact.join(':')
+        else
+          nil
+        end
       end
 
       # Describe the next task to be defined. The given text will be attached to
@@ -64,6 +66,7 @@ module Capistrano
         raise ArgumentError, "expected a block" unless block_given?
 
         namespace_already_defined = namespaces.key?(name)
+
         if all_methods.any? { |m| m.to_sym == name } && !namespace_already_defined
           thing = tasks.key?(name) ? "task" : "method"
           raise ArgumentError, "defining a namespace named `#{name}' would shadow an existing #{thing} with that name"
@@ -89,13 +92,13 @@ module Capistrano
         raise ArgumentError, "expected a block" unless block_given?
 
         task_already_defined = tasks.key?(name)
+
         if all_methods.any? { |m| m.to_sym == name } && !task_already_defined
           thing = namespaces.key?(name) ? "namespace" : "method"
           raise ArgumentError, "defining a task named `#{name}' would shadow an existing #{thing} with that name"
         end
 
-
-        task = TaskDefinition.new(name, self, {:desc => next_description(:reset)}.merge(options), &block)
+        task = TaskDefinition.new(name, self, { :desc => next_description(:reset) }.merge(options), &block)
 
         define_task(task)
       end
@@ -112,11 +115,13 @@ module Capistrano
       # the referenced task, or nil if no such task can be found. If the name
       # refers to a namespace, the task in that namespace named "default"
       # will be returned instead, if one exists.
+
       def find_task(name)
         parts = name.to_s.split(/:/)
         tail = parts.pop.to_sym
 
         ns = self
+
         until parts.empty?
           next_part = parts.shift
           ns = next_part.empty? ? nil : ns.namespaces[next_part.to_sym]
@@ -134,6 +139,7 @@ module Capistrano
       # Given a task name, this will search the current namespace, and all
       # parent namespaces, looking for a task that matches the name, exactly.
       # It returns the task, if found, or nil, if not.
+
       def search_task(name)
         name = name.to_sym
         ns = self
@@ -149,19 +155,21 @@ module Capistrano
       # Returns the default task for this namespace. This will be +nil+ if
       # the namespace is at the top-level, and will otherwise return the
       # task named "default". If no such task exists, +nil+ will be returned.
+
       def default_task
-        return nil if parent.nil?
-        return tasks[DEFAULT_TASK]
+        parent ? tasks[DEFAULT_TASK] : nil
       end
 
       # Returns the tasks in this namespace as an array of TaskDefinition
       # objects. If a non-false parameter is given, all tasks in all
       # namespaces under this namespace will be returned as well.
+
       def task_list(all = false)
         list = tasks.values
         namespaces.each { |name,space| list.concat(space.task_list(:all)) } if all
         list
       end
+
 
       private
 
@@ -188,6 +196,7 @@ module Capistrano
 
         include Capistrano::Configuration::AliasTask
         include Capistrano::Configuration::Namespaces
+
         undef :desc, :next_description
       end
     end
@@ -199,6 +208,7 @@ module Kernel
     alias_method :method_added_without_capistrano, :method_added
 
     # Detect method additions to Kernel and remove them in the Namespace class
+
     def method_added(name)
       result = method_added_without_capistrano(name)
       return result if self != Kernel

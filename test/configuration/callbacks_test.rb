@@ -176,7 +176,6 @@ class ConfigurationCallbacksTest < Test::Unit::TestCase
   end
 
   def test_trigger_without_task_should_invoke_all_callbacks_for_that_event
-    task = stub(:fully_qualified_name => "any:old:thing")
     @config.on(:before, :first)
     @config.on(:before, "second:third", :except => "any:old:thing")
     @config.on(:before, "this:too", :except => "any:other:thing")

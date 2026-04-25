@@ -9,6 +9,7 @@ module Capistrano
 
         # Store the given data at the given location on the configured server.
         # If <tt>:mode</tt> is specified it is used to set the mode on the file.
+
         def put(data, path, options = {})
           opts = options.dup
           upload(StringIO.new(data), path, opts)
@@ -18,6 +19,7 @@ module Capistrano
         # local machine as path.
         #
         # get "#{deploy_to}/current/log/production.log", "log/production.log.web"
+
         def get(remote_path, path, options = {}, &block)
           download(remote_path, path, options, &block)
         end
@@ -25,6 +27,7 @@ module Capistrano
         def upload(from, to, options = {}, &block)
           mode = options.delete(:mode)
           transfer(:up, from, to, options, &block)
+
           if mode
             mode = mode.is_a?(Numeric) ? mode.to_s(8) : mode.to_s
             run "chmod #{mode} #{to}", options
@@ -39,11 +42,11 @@ module Capistrano
           if dry_run
             return logger.debug "transfering: #{[direction, from, to] * ', '}"
           end
+
           execute_on_server(options) do
             Transfer.process(direction, from, to, session, options.merge(:logger => logger), &block)
           end
         end
-
       end
     end
   end

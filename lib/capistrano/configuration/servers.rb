@@ -15,6 +15,7 @@ module Capistrano
       #
       #   server "www@example.com"
       #   server "app.example.com", :user => "deploy"
+
       def server(host, options = {})
         raise ArgumentError, "server accepts one host and an optional options hash" unless options.is_a?(Hash)
         raise ArgumentError, "you may only define one server" if @server
@@ -25,6 +26,7 @@ module Capistrano
       # Returns the configured server. If the HOST environment variable
       # is set, it replaces the configured host name while preserving configured
       # connection options such as user, port, and SSH options.
+
       def active_server
         raise Capistrano::NoMatchingServersError, "no server configured" unless @server
 
