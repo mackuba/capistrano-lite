@@ -8,7 +8,7 @@ module Capistrano
   class Transfer
     include Processable
 
-    def self.process(direction, from, to, session, options={}, &block)
+    def self.process(direction, from, to, session, options = {}, &block)
       new(direction, from, to, session, options, &block).process!
     end
 
@@ -24,7 +24,7 @@ module Capistrano
     attr_reader :logger
     attr_reader :transfer
 
-    def initialize(direction, from, to, session, options={}, &block)
+    def initialize(direction, from, to, session, options = {}, &block)
       @direction = direction
       @from      = from
       @to        = to

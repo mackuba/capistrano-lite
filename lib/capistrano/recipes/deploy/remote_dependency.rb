@@ -12,50 +12,50 @@ module Capistrano
         @hosts = nil
       end
 
-      def directory(path, options={})
+      def directory(path, options = {})
         @message ||= "`#{path}' is not a directory"
         try("test -d #{path}", options)
         self
       end
 
-      def file(path, options={})
+      def file(path, options = {})
         @message ||= "`#{path}' is not a file"
         try("test -f #{path}", options)
         self
       end
 
-      def writable(path, options={})
+      def writable(path, options = {})
         @message ||= "`#{path}' is not writable"
         try("test -w #{path}", options)
         self
       end
 
-      def command(command, options={})
+      def command(command, options = {})
         @message ||= "`#{command}' could not be found in the path"
         try("which #{command}", options)
         self
       end
 
-      def gem(name, version, options={})
+      def gem(name, version, options = {})
         @message ||= "gem `#{name}' #{version} could not be found"
         gem_cmd = configuration.fetch(:gem_command, "gem")
         try("#{gem_cmd} specification --version '#{version}' #{name} 2>&1 | awk 'BEGIN { s = 0 } /^name:/ { s = 1; exit }; END { if(s == 0) exit 1 }'", options)
         self
       end
 
-      def deb(name, version, options={})
+      def deb(name, version, options = {})
         @message ||= "package `#{name}' #{version} could not be found"
         try("dpkg -s #{name} | grep '^Version: #{version}'", options)
         self
       end
 
-      def rpm(name, version, options={})
+      def rpm(name, version, options = {})
         @message ||= "package `#{name}' #{version} could not be found"
         try("rpm -q #{name} | grep '#{version}'", options)
         self
       end
 
-      def match(command, expect, options={})
+      def match(command, expect, options = {})
         expect = Regexp.new(Regexp.escape(expect.to_s)) unless expect.is_a?(Regexp)
 
         output_per_server = {}

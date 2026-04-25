@@ -175,7 +175,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
 
   private
 
-    def mock_task(options={})
+    def mock_task(options = {})
       continue_on_error = options[:on_error] == :continue
       stub("task",
         :fully_qualified_name => "name",

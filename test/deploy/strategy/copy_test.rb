@@ -326,7 +326,7 @@ class DeployStrategyCopyTest < Test::Unit::TestCase
 
   private
 
-    def prepare_directory_tree!(cache, exclude=false)
+    def prepare_directory_tree!(cache, exclude = false)
       Dir.expects(:glob).with("*", File::FNM_DOTMATCH).returns([".", "..", "app", "app{1}", "foo.txt"])
       File.expects(:ftype).with("app").returns("directory")
       File.expects(:ftype).with("app{1}").returns("directory")

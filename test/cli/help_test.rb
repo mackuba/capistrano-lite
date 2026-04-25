@@ -158,7 +158,7 @@ class CLIHelpTest < Test::Unit::TestCase
 
   private
 
-  def task(name, fqn=name, desc="a description")
+  def task(name, fqn = name, desc = "a description")
     stub("task", :name => name, :fully_qualified_name => fqn, :description => desc)
   end
 

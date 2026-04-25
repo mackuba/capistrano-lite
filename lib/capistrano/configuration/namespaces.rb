@@ -53,7 +53,7 @@ module Capistrano
 
       # Returns the value set by the last, pending "desc" call. If +reset+ is
       # not false, the value will be reset immediately afterwards.
-      def next_description(reset=false)
+      def next_description(reset = false)
         @next_description
       ensure
         @next_description = nil if reset
@@ -87,7 +87,7 @@ module Capistrano
       # Describe a new task. If a description is active (see #desc), it is added
       # to the options under the <tt>:desc</tt> key. The new task is added to
       # the namespace.
-      def task(name, options={}, &block)
+      def task(name, options = {}, &block)
         name = name.to_sym
         raise ArgumentError, "expected a block" unless block_given?
 
@@ -160,7 +160,7 @@ module Capistrano
       # Returns the tasks in this namespace as an array of TaskDefinition
       # objects. If a non-false parameter is given, all tasks in all
       # namespaces under this namespace will be returned as well.
-      def task_list(all=false)
+      def task_list(all = false)
         list = tasks.values
         namespaces.each { |name,space| list.concat(space.task_list(:all)) } if all
         list
@@ -178,7 +178,7 @@ module Capistrano
             @name = name
           end
 
-          def respond_to?(sym, include_priv=false)
+          def respond_to?(sym, include_priv = false)
             super || parent.respond_to?(sym, include_priv)
           end
 

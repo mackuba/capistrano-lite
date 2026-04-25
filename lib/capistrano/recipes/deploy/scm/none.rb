@@ -44,7 +44,7 @@ module Capistrano
 
         # log: There's no log, so it just echos from and to.
 
-        def log(from="", to="")
+        def log(from = "", to = "")
           "No SCM: #{from} - #{to}"
         end
 

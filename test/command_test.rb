@@ -241,7 +241,7 @@ class CommandTest < Test::Unit::TestCase
 
   private
 
-    def mock_session(channel=nil)
+    def mock_session(channel = nil)
       stub('session',
            :open_channel => channel,
            :preprocess   => true,
@@ -255,7 +255,7 @@ class CommandTest < Test::Unit::TestCase
       end
     end
 
-    def new_channel(closed, status=nil)
+    def new_channel(closed, status = nil)
       ch = MockChannel.new
       ch.update({ :closed => closed, :host => "capistrano", :server => server("capistrano") })
       ch[:status] = status if status
@@ -263,7 +263,7 @@ class CommandTest < Test::Unit::TestCase
       ch
     end
 
-    def setup_for_extracting_channel_action(action=nil, *args)
+    def setup_for_extracting_channel_action(action = nil, *args)
       s = server("capistrano")
       session = mock("session", :xserver => s)
 
@@ -287,7 +287,7 @@ class CommandTest < Test::Unit::TestCase
       session
     end
 
-    def open_test_channel(command, session, options={}, &block)
+    def open_test_channel(command, session, options = {}, &block)
       cmd = Capistrano::Command.new(command, session, options, &block)
       cmd.send(:open_channel, session)
       cmd

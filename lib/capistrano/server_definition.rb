@@ -12,7 +12,7 @@ module Capistrano
       ENV['USER'] || ENV['USERNAME'] || "not-specified"
     end
 
-    def initialize(string, options={})
+    def initialize(string, options = {})
       @user, @host, @port = string.match(/^(?:([^;,:=]+)@|)(.*?)(?::(\d+)|)$/)[1,3]
 
       @options = options.dup

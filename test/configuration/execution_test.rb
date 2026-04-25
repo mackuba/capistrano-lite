@@ -8,7 +8,7 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
     attr_reader :state, :original_initialize_called
     attr_accessor :logger, :default_task
 
-    def initialize(options={})
+    def initialize(options = {})
       @original_initialize_called = true
       @tasks = {}
       @namespaces = {}
@@ -168,7 +168,7 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
       end
     end
 
-    def new_task(namespace, name, options={}, &block)
+    def new_task(namespace, name, options = {}, &block)
       block ||= stack_inspector
       namespace.tasks[name] = Capistrano::TaskDefinition.new(name, namespace, &block)
     end

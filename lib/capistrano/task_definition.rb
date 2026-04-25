@@ -6,7 +6,7 @@ module Capistrano
 
     attr_reader :name, :namespace, :options, :body, :desc, :on_error
 
-    def initialize(name, namespace, options={}, &block)
+    def initialize(name, namespace, options = {}, &block)
       @name, @namespace, @options = name, namespace, options
       @desc      = @options.delete(:desc)
       @on_error  = options.delete(:on_error)
@@ -32,7 +32,7 @@ module Capistrano
     # Returns the description for this task, with newlines collapsed and
     # whitespace stripped. Returns the empty string if there is no
     # description for this task.
-    def description(rebuild=false)
+    def description(rebuild = false)
       @description = nil if rebuild
       @description ||= begin
         description = @desc || ""
@@ -55,7 +55,7 @@ module Capistrano
     # Returns the first sentence of the full description. If +max_length+ is
     # given, the result will be truncated if it is longer than +max_length+,
     # and an ellipsis appended.
-    def brief_description(max_length=nil)
+    def brief_description(max_length = nil)
       brief = description[/^.*?\.(?=\s|$)/] || description
 
       if max_length && brief.length > max_length

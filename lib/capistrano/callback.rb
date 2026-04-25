@@ -2,7 +2,7 @@ module Capistrano
   class Callback
     attr_reader :source, :options, :only, :except
 
-    def initialize(source, options={})
+    def initialize(source, options = {})
       @source = source
       @options = options
       @only = Array(options[:only]).map { |v| v.to_s }
@@ -29,7 +29,7 @@ module Capistrano
   class TaskCallback < Callback
     attr_reader :config
 
-    def initialize(config, source, options={})
+    def initialize(config, source, options = {})
       super(source, options)
       @config = config
     end

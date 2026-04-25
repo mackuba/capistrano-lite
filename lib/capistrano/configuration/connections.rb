@@ -32,7 +32,7 @@ module Capistrano
       # Connections are normally made lazily in Capistrano--you can use this
       # to force them open before performing some operation that might be
       # time-sensitive.
-      def connect!(options={})
+      def connect!(options = {})
         execute_on_server(options) { }
       end
 
@@ -61,7 +61,7 @@ module Capistrano
 
       # Determines the configured server, establishes a connection to it, and
       # yields the server to the command and transfer layers.
-      def execute_on_server(options={})
+      def execute_on_server(options = {})
         raise ArgumentError, "expected a block" unless block_given?
 
         task = current_task

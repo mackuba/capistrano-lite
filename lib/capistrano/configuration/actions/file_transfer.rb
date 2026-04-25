@@ -7,7 +7,7 @@ module Capistrano
 
         # Store the given data at the given location on the configured server.
         # If <tt>:mode</tt> is specified it is used to set the mode on the file.
-        def put(data, path, options={})
+        def put(data, path, options = {})
           opts = options.dup
           upload(StringIO.new(data), path, opts)
         end
@@ -16,11 +16,11 @@ module Capistrano
         # local machine as path.
         #
         # get "#{deploy_to}/current/log/production.log", "log/production.log.web"
-        def get(remote_path, path, options={}, &block)
+        def get(remote_path, path, options = {}, &block)
           download(remote_path, path, options, &block)
         end
 
-        def upload(from, to, options={}, &block)
+        def upload(from, to, options = {}, &block)
           mode = options.delete(:mode)
           transfer(:up, from, to, options, &block)
           if mode
@@ -29,11 +29,11 @@ module Capistrano
           end
         end
 
-        def download(from, to, options={}, &block)
+        def download(from, to, options = {}, &block)
           transfer(:down, from, to, options, &block)
         end
 
-        def transfer(direction, from, to, options={}, &block)
+        def transfer(direction, from, to, options = {}, &block)
           if dry_run
             return logger.debug "transfering: #{[direction, from, to] * ', '}"
           end

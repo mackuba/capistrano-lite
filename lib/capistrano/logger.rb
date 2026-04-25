@@ -56,7 +56,7 @@ module Capistrano
         @default_formatters
       end
 
-      def default_formatters=(defaults=nil)
+      def default_formatters=(defaults = nil)
         @default_formatters = [defaults].flatten
 
         # reset the formatters
@@ -75,7 +75,7 @@ module Capistrano
       end
     end
 
-    def initialize(options={})
+    def initialize(options = {})
       output = options[:output] || $stderr
       if output.respond_to?(:puts)
         @device = output
@@ -93,7 +93,7 @@ module Capistrano
       device.close if @needs_close
     end
 
-    def log(level, message, line_prefix=nil)
+    def log(level, message, line_prefix = nil)
       if level <= self.level
         # Only format output if device is a TTY and formatters are not disabled
         if device.tty? && !@disable_formatters
@@ -142,19 +142,19 @@ module Capistrano
       end
     end
 
-    def important(message, line_prefix=nil)
+    def important(message, line_prefix = nil)
       log(IMPORTANT, message, line_prefix)
     end
 
-    def info(message, line_prefix=nil)
+    def info(message, line_prefix = nil)
       log(INFO, message, line_prefix)
     end
 
-    def debug(message, line_prefix=nil)
+    def debug(message, line_prefix = nil)
       log(DEBUG, message, line_prefix)
     end
 
-    def trace(message, line_prefix=nil)
+    def trace(message, line_prefix = nil)
       log(TRACE, message, line_prefix)
     end
 

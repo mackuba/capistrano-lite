@@ -173,7 +173,7 @@ module Capistrano
             FileUtils.ln(name, File.join(destination, name))
           end
 
-          def queue_files directory=nil
+          def queue_files directory = nil
             Dir.glob(pattern_for(directory), File::FNM_DOTMATCH).reject! { |file| excluded_files_contain? file }
           end
 

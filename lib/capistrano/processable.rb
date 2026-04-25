@@ -13,7 +13,7 @@ module Capistrano
       attr_accessor :session
     end
 
-    def process_iteration(wait=nil, &block)
+    def process_iteration(wait = nil, &block)
       ensure_session { |session| session.preprocess }
 
       return false if block && !block.call(self)

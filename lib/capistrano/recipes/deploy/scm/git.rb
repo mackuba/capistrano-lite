@@ -198,13 +198,13 @@ module Capistrano
         end
 
         # Returns a string of diffs between two revisions
-        def diff(from, to=nil)
+        def diff(from, to = nil)
           return scm :diff, from unless to
           scm :diff, "#{from}..#{to}"
         end
 
         # Returns a log of changes between the two revisions (inclusive).
-        def log(from, to=nil)
+        def log(from, to = nil)
           scm :log, "#{from}..#{to}"
         end
 

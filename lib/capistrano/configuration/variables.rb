@@ -97,7 +97,7 @@ module Capistrano
       end
       private :initialize_with_variables
 
-      def respond_to_with_variables?(sym, include_priv=false) #:nodoc:
+      def respond_to_with_variables?(sym, include_priv = false) #:nodoc:
         @variables.has_key?(sym.to_sym) || respond_to_without_variables?(sym, include_priv)
       end
 

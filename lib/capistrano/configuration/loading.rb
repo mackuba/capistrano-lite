@@ -12,7 +12,7 @@ module Capistrano
         # configuration that is loading them. Its return value is not reliable
         # in other contexts. If +require_config+ is not false, an exception
         # will be raised if the current configuration is not set.
-        def instance(require_config=false)
+        def instance(require_config = false)
           config = @instance
           if require_config && config.nil?
             raise LoadError, "Please require this file from within a Capistrano recipe"
@@ -175,7 +175,7 @@ module Capistrano
 
         # Load a recipe from the named file. If +name+ is given, the file will
         # be reported using that name.
-        def load_from_file(file, name=nil)
+        def load_from_file(file, name = nil)
           file = find_file_in_load_path(file) unless File.file?(file)
           load :string => File.read(file), :name => name || file
         end

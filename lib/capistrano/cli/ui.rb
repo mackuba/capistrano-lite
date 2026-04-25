@@ -19,7 +19,7 @@ module Capistrano
         end
 
         # Prompt for a password using echo suppression.
-        def password_prompt(prompt="Password: ")
+        def password_prompt(prompt = "Password: ")
           ui.ask(prompt) { |q| q.echo = false }
         end
 

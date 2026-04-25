@@ -40,7 +40,7 @@ module Capistrano
 
     protected
 
-      def server_definition_from(host, options={})
+      def server_definition_from(host, options = {})
         case host
         when ServerDefinition
           host

@@ -1,7 +1,7 @@
 module Capistrano
   module Deploy
     module Strategy
-      def self.new(strategy, config={})
+      def self.new(strategy, config = {})
         strategy_file = "capistrano/recipes/deploy/strategy/#{strategy}"
         strategy_const = strategy.to_s.capitalize.gsub(/_(.)/) { $1.upcase }
 

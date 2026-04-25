@@ -66,7 +66,7 @@ module Capistrano
 
       # Primarily useful for testing, but subclasses of CLI could conceivably
       # override this method to return a Configuration subclass or replacement.
-      def instantiate_configuration(options={}) #:nodoc:
+      def instantiate_configuration(options = {}) #:nodoc:
         Capistrano::Configuration.new(options)
       end
 

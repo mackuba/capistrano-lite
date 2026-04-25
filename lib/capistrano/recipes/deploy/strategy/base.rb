@@ -12,7 +12,7 @@ module Capistrano
         attr_reader :configuration
 
         # Instantiates a strategy with a reference to the given configuration.
-        def initialize(config={})
+        def initialize(config = {})
           @configuration = config
         end
 

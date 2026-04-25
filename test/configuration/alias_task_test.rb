@@ -9,7 +9,7 @@ class AliasTaskTest < Test::Unit::TestCase
     attr_reader :options
     attr_accessor :logger
 
-    def initialize(options={})
+    def initialize(options = {})
       @options = {}
       @logger = options.delete(:logger)
     end

@@ -14,7 +14,7 @@ module Capistrano
           # If no parameters are given, it returns the current configured
           # name of the command-line utility of this SCM. If a parameter is
           # given, the defeault command is set to that value.
-          def default_command(value=nil)
+          def default_command(value = nil)
             if value
               @default_command = value
             else
@@ -41,7 +41,7 @@ module Capistrano
         attr_reader :configuration
 
         # Creates a new SCM instance with the given configuration options.
-        def initialize(configuration={})
+        def initialize(configuration = {})
           @configuration = configuration
         end
 
@@ -95,13 +95,13 @@ module Capistrano
         end
 
         # Compute the difference between the two revisions, +from+ and +to+.
-        def diff(from, to=nil)
+        def diff(from, to = nil)
           raise NotImplementedError, "`diff' is not implemented by #{self.class.name}"
         end
 
         # Return a log of all changes between the two specified revisions,
         # +from+ and +to+, inclusive.
-        def log(from, to=nil)
+        def log(from, to = nil)
           raise NotImplementedError, "`log' is not implemented by #{self.class.name}"
         end
 
