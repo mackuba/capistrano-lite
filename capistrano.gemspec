@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
     "README.md"
   ]
 
+  spec.add_dependency 'benchmark', '~> 0.5'
   spec.add_dependency 'highline', '>= 0'
   spec.add_dependency 'net-ssh', '>= 2.0.14'
   spec.add_dependency 'net-sftp', '>= 2.0.0'
