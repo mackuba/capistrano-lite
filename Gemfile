@@ -4,9 +4,7 @@ source 'http://rubygems.org'
 gemspec
 
 group :development do
-  gem "mocha", "0.9.12"
-  gem "rake"
-  gem "rexml"
-  gem "pry"
-  gem "test-unit"
+  gem 'mocha', '0.9.12'
+  gem 'rake', '~> 13.4'
+  gem 'test-unit', '~> 3.7'
 end
