@@ -1,5 +1,3 @@
-require 'thread'
-
 module Capistrano
   class Configuration
     module Variables
@@ -32,7 +30,7 @@ module Capistrano
 
         value = args.empty? ? block : args.first
         sym = variable.to_sym
-        protect(sym) { @variables[sym] = value }
+        @variables[sym] = value
       end
 
       alias :[]= :set
@@ -40,10 +38,8 @@ module Capistrano
       # Removes any trace of the given variable.
       def unset(variable)
         sym = variable.to_sym
-        protect(sym) do
-          @original_procs.delete(sym)
-          @variables.delete(sym)
-        end
+        @original_procs.delete(sym)
+        @variables.delete(sym)
       end
 
       # Returns true if the variable has been defined, and false otherwise.
@@ -56,13 +52,11 @@ module Capistrano
       # true if the variable was actually reset.
       def reset!(variable)
         sym = variable.to_sym
-        protect(sym) do
-          if @original_procs.key?(sym)
-            @variables[sym] = @original_procs.delete(sym)
-            true
-          else
-            false
-          end
+        if @original_procs.key?(sym)
+          @variables[sym] = @original_procs.delete(sym)
+          true
+        else
+          false
         end
       end
 
@@ -75,17 +69,15 @@ module Capistrano
         end
 
         sym = variable.to_sym
-        protect(sym) do
-          if !@variables.key?(sym)
-            return args.first unless args.empty?
-            return yield(variable) if block_given?
-            raise IndexError, "`#{variable}' not found"
-          end
+        if !@variables.key?(sym)
+          return args.first unless args.empty?
+          return yield(variable) if block_given?
+          raise IndexError, "`#{variable}' not found"
+        end
 
-          if @variables[sym].respond_to?(:call)
-            @original_procs[sym] = @variables[sym]
-            @variables[sym] = @variables[sym].call
-          end
+        if @variables[sym].respond_to?(:call)
+          @original_procs[sym] = @variables[sym]
+          @variables[sym] = @variables[sym].call
         end
 
         @variables[sym]
@@ -99,17 +91,11 @@ module Capistrano
         initialize_without_variables(*args)
         @variables = {}
         @original_procs = {}
-        @variable_locks = Hash.new { |h,k| h[k] = Mutex.new }
 
         set :ssh_options, {}
         set :logger, logger
       end
       private :initialize_with_variables
-
-      def protect(variable)
-        @variable_locks[variable.to_sym].synchronize { yield }
-      end
-      private :protect
 
       def respond_to_with_variables?(sym, include_priv=false) #:nodoc:
         @variables.has_key?(sym.to_sym) || respond_to_without_variables?(sym, include_priv)

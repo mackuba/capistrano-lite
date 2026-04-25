@@ -13,7 +13,7 @@ module Capistrano
         # in other contexts. If +require_config+ is not false, an exception
         # will be raised if the current configuration is not set.
         def instance(require_config=false)
-          config = Thread.current[:capistrano_configuration]
+          config = @instance
           if require_config && config.nil?
             raise LoadError, "Please require this file from within a Capistrano recipe"
           end
@@ -23,7 +23,7 @@ module Capistrano
         # Used internally by Capistrano to specify the current configuration
         # before loading a third-party task bundle.
         def instance=(config)
-          Thread.current[:capistrano_configuration] = config
+          @instance = config
         end
 
         # Used internally by Capistrano to track which recipes have been loaded
@@ -37,7 +37,7 @@ module Capistrano
         # required is. This is used to track which files load which recipes
         # via require.
         def current_feature
-          Thread.current[:capistrano_current_feature]
+          @current_feature
         end
 
         # Used internally to specify the current file being required, so that
@@ -45,7 +45,7 @@ module Capistrano
         # recipes loaded via require to be correctly reloaded in different
         # Configuration instances in the same Ruby instance.
         def current_feature=(feature)
-          Thread.current[:capistrano_current_feature] = feature
+          @current_feature = feature
         end
       end
 

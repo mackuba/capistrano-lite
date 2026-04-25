@@ -15,7 +15,7 @@ class ConfigurationTest < Test::Unit::TestCase
 
     process_args = Proc.new do |command, session, opts|
       command == "echo 'hello world'" &&
-      session == [:session] &&
+      session == :session &&
       opts == { :logger => @config.logger, :eof => true, :configuration => @config }
     end
 

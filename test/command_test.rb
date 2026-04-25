@@ -3,18 +3,18 @@ require 'capistrano/command'
 require 'capistrano/configuration'
 
 class CommandTest < Test::Unit::TestCase
-  def test_command_should_keep_all_sessions
-    s1, s2, s3 = mock_session, mock_session, mock_session
-    assert_equal [s1, s2, s3], Capistrano::Command.new("ls", [s1, s2, s3]).sessions
+  def test_command_should_keep_session
+    session = mock_session
+    assert_equal session, Capistrano::Command.new("ls", session).session
   end
 
   def test_command_with_newlines_should_be_properly_escaped
-    cmd = Capistrano::Command.new("ls\necho", [mock_session])
+    cmd = Capistrano::Command.new("ls\necho", mock_session)
     assert_equal "ls\\\necho", cmd.command
   end
 
   def test_command_with_crlf_newlines_should_be_properly_escaped
-    cmd = Capistrano::Command.new("ls\r\necho", [mock_session])
+    cmd = Capistrano::Command.new("ls\r\necho", mock_session)
     assert_equal "ls\\\necho", cmd.command
   end
 
@@ -171,35 +171,24 @@ class CommandTest < Test::Unit::TestCase
     assert channel[:closed]
   end
 
-  def test_stop_should_close_all_open_channels
-    cmd = Capistrano::Command.new("ls", [])
-    cmd.send(:open_channel, mock_session(new_channel(false)))
-    cmd.send(:open_channel, mock_session(new_channel(true)))
+  def test_stop_should_close_open_channel
+    cmd = Capistrano::Command.new("ls", mock_session)
     cmd.send(:open_channel, mock_session(new_channel(false)))
     cmd.stop!
   end
 
-  def test_process_should_return_cleanly_if_all_channels_have_zero_exit_status
-    sessions = [mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 0))]
-    cmd = Capistrano::Command.new("ls", sessions)
+  def test_process_should_return_cleanly_if_channel_has_zero_exit_status
+    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 0)))
     assert_nothing_raised { cmd.process! }
   end
 
-  def test_process_should_raise_error_if_any_channel_has_non_zero_exit_status
-    sessions = [mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 1))]
-    cmd = Capistrano::Command.new("ls", sessions)
+  def test_process_should_raise_error_if_channel_has_non_zero_exit_status
+    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 1)))
     assert_raises(Capistrano::CommandError) { cmd.process! }
   end
 
   def test_command_error_should_include_accessor_with_host_array
-    sessions = [mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 0)),
-                mock_session(new_channel(true, 1))]
-    cmd = Capistrano::Command.new("ls", sessions)
+    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 1)))
 
     begin
       cmd.process!
@@ -210,20 +199,12 @@ class CommandTest < Test::Unit::TestCase
     end
   end
 
-  def test_process_should_loop_until_all_channels_are_closed
-    new_channel = Proc.new do |times|
-      ch = mock("channel")
-      returns = [false] * (times-1)
-      ch.stubs(:to_ary)
-      ch.stubs(:[]).with(:closed).returns(*(returns + [true]))
-      ch.expects(:[]).with(:status).returns(0)
-      ch
-    end
-
-    sessions = [mock_session(new_channel[5]),
-                mock_session(new_channel[10]),
-                mock_session(new_channel[7])]
-    cmd = Capistrano::Command.new("ls", sessions)
+  def test_process_should_loop_until_channel_is_closed
+    ch = mock("channel")
+    ch.stubs(:to_ary)
+    ch.stubs(:[]).with(:closed).returns(false, false, false, true)
+    ch.expects(:[]).with(:status).returns(0)
+    cmd = Capistrano::Command.new("ls", mock_session(ch))
     assert_nothing_raised do
       cmd.process!
     end
@@ -231,8 +212,9 @@ class CommandTest < Test::Unit::TestCase
 
   def test_process_should_instantiate_command_and_process!
     cmd = mock("command", :process! => nil)
-    Capistrano::Command.expects(:new).with("ls -l", %w(a b c), {:foo => "bar"}).returns(cmd)
-    Capistrano::Command.process("ls -l", %w(a b c), :foo => "bar")
+    session = mock_session
+    Capistrano::Command.expects(:new).with("ls -l", session, {:foo => "bar"}).returns(cmd)
+    Capistrano::Command.process("ls -l", session, :foo => "bar")
   end
 
   def test_process_with_host_placeholder_should_substitute_host_placeholder_with_each_host
@@ -306,7 +288,7 @@ class CommandTest < Test::Unit::TestCase
     end
 
     def open_test_channel(command, session, options={}, &block)
-      cmd = Capistrano::Command.new(command, [session], options, &block)
+      cmd = Capistrano::Command.new(command, session, options, &block)
       cmd.send(:open_channel, session)
       cmd
     end

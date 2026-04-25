@@ -37,9 +37,8 @@ module Capistrano
           if dry_run
             return logger.debug "transfering: #{[direction, from, to] * ', '}"
           end
-          execute_on_servers(options) do |servers|
-            targets = servers.map { |s| sessions[s] }
-              Transfer.process(direction, from, to, targets, options.merge(:logger => logger), &block)
+          execute_on_server(options) do
+            Transfer.process(direction, from, to, session, options.merge(:logger => logger), &block)
           end
         end
 

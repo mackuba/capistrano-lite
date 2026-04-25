@@ -14,11 +14,11 @@ module Capistrano
     end
 
     def process_iteration(wait=nil, &block)
-      ensure_each_session { |session| session.preprocess }
+      ensure_session { |session| session.preprocess }
 
       return false if block && !block.call(self)
 
-      readers = sessions.map { |session| session.listeners.keys }.flatten.reject { |io| io.closed? }
+      readers = session.listeners.keys.reject { |io| io.closed? }
       writers = readers.select { |io| io.respond_to?(:pending_write?) && io.pending_write? }
 
       if readers.any? || writers.any?
@@ -28,7 +28,7 @@ module Capistrano
       end
 
       if readers
-        ensure_each_session do |session|
+        ensure_session do |session|
           ios = session.listeners.keys
           session.postprocess(ios & readers, ios & writers)
         end
@@ -37,19 +37,13 @@ module Capistrano
       true
     end
 
-    def ensure_each_session
-      errors = []
-
-      sessions.each do |session|
-        begin
-          yield session
-        rescue Exception => error
-          errors << SessionAssociation.on(error, session)
-        end
+    def ensure_session
+      begin
+        yield session
+      rescue Exception => error
+        raise SessionAssociation.on(error, session)
       end
-
-      raise errors.first if errors.any?
-      sessions
+      session
     end
   end
 end

@@ -13,6 +13,8 @@ module Capistrano
 
       def initialize_with_execution(*args) #:nodoc:
         initialize_without_execution(*args)
+        @task_call_frames = []
+        @rollback_requests = nil
       end
       private :initialize_with_execution
 
@@ -25,20 +27,14 @@ module Capistrano
       # this to see who its caller was. The current task is always the last
       # element of this stack.
       def task_call_frames
-        Thread.current[:task_call_frames] ||= []
+        @task_call_frames
       end
 
 
       # The stack of tasks that have registered rollback handlers within the
       # current transaction. If this is nil, then there is no transaction
       # that is currently active.
-      def rollback_requests
-        Thread.current[:rollback_requests]
-      end
-
-      def rollback_requests=(rollback_requests)
-        Thread.current[:rollback_requests] = rollback_requests
-      end
+      attr_accessor :rollback_requests
 
       # Invoke a set of tasks in a transaction. If any task fails (raises an
       # exception), all tasks executed within the transaction are inspected to
@@ -107,7 +103,7 @@ module Capistrano
     protected
 
       def rollback!
-        return if Thread.current[:rollback_requests].nil?
+        return if rollback_requests.nil?
 
         # throw the task back on the stack so that roles are properly
         # interpreted in the scope of the task in question.

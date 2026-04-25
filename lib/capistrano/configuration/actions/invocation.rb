@@ -80,16 +80,15 @@ module Capistrano
             raise ArgumentError, "attempt to execute without specifying a command"
           end
 
-          filter_servers(options)
+          active_server
           logger.debug "executing #{cmd.inspect}" unless options[:silent]
 
           return if dry_run || (debug && continue_execution(cmd) == false)
 
           block = sudo_behavior_callback(block) if cmd.include?(sudo)
 
-          execute_on_servers(options) do |servers|
-            targets = servers.map { |s| sessions[s] }
-            Command.process(cmd, targets, options.merge(:logger => logger, :configuration => self), &block)
+          execute_on_server(options) do
+            Command.process(cmd, session, options.merge(:logger => logger, :configuration => self), &block)
           end
         end
 

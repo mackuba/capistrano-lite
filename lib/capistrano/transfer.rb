@@ -1,17 +1,18 @@
 require 'net/scp'
 require 'net/sftp'
 
+require 'capistrano/errors'
 require 'capistrano/processable'
 
 module Capistrano
   class Transfer
     include Processable
 
-    def self.process(direction, from, to, sessions, options={}, &block)
-      new(direction, from, to, sessions, options, &block).process!
+    def self.process(direction, from, to, session, options={}, &block)
+      new(direction, from, to, session, options, &block).process!
     end
 
-    attr_reader :sessions
+    attr_reader :session
     attr_reader :options
     attr_reader :callback
 
@@ -21,22 +22,20 @@ module Capistrano
     attr_reader :to
 
     attr_reader :logger
-    attr_reader :transfers
+    attr_reader :transfer
 
-    def initialize(direction, from, to, sessions, options={}, &block)
+    def initialize(direction, from, to, session, options={}, &block)
       @direction = direction
       @from      = from
       @to        = to
-      @sessions  = sessions
+      @session   = session
       @options   = options
       @callback  = block
 
       @transport = options.fetch(:via, :sftp)
       @logger    = options.delete(:logger)
 
-      @session_map = {}
-
-      prepare_transfers
+      prepare_transfer
     end
 
     def process!
@@ -52,12 +51,11 @@ module Capistrano
         end
       end
 
-      failed = transfers.select { |txfr| txfr[:failed] }
-      if failed.any?
-        hosts = failed.map { |txfr| txfr[:server] }
-        errors = failed.map { |txfr| "#{txfr[:error]} (#{txfr[:error].message})" }.uniq.join(", ")
-        error = TransferError.new("#{operation} via #{transport} failed on #{hosts.join(',')}: #{errors}")
-        error.hosts = hosts
+      if transfer[:failed]
+        server = transfer[:server]
+        transfer_error = transfer[:error]
+        error = TransferError.new("#{operation} via #{transport} failed on #{server}: #{transfer_error} (#{transfer_error.message})")
+        error.hosts = [server]
 
         logger.important(error.message) if logger
         raise error
@@ -68,7 +66,7 @@ module Capistrano
     end
 
     def active?
-      transfers.any? { |transfer| transfer.active? }
+      transfer.active?
     end
 
     def operation
@@ -93,29 +91,23 @@ module Capistrano
 
     private
 
-      def session_map
-        @session_map
-      end
-
-      def prepare_transfers
+      def prepare_transfer
         logger.info "#{transport} #{operation} #{from} -> #{to}" if logger
 
-        @transfers = sessions.map do |session|
-          session_from = normalize(from, session)
-          session_to   = normalize(to, session)
+        session_from = normalize(from)
+        session_to   = normalize(to)
 
-          session_map[session] = case transport
-            when :sftp
-              prepare_sftp_transfer(session_from, session_to, session)
-            when :scp
-              prepare_scp_transfer(session_from, session_to, session)
-            else
-              raise ArgumentError, "unsupported transport type: #{transport.inspect}"
-            end
+        @transfer = case transport
+          when :sftp
+            prepare_sftp_transfer(session_from, session_to)
+          when :scp
+            prepare_scp_transfer(session_from, session_to)
+          else
+            raise ArgumentError, "unsupported transport type: #{transport.inspect}"
         end
       end
 
-      def prepare_scp_transfer(from, to, session)
+      def prepare_scp_transfer(from, to)
         real_callback = callback || Proc.new do |channel, name, sent, total|
           logger.trace "[#{channel[:host]}] #{name}" if logger && sent == 0
         end
@@ -161,7 +153,7 @@ module Capistrano
         end
       end
 
-      def prepare_sftp_transfer(from, to, session)
+      def prepare_sftp_transfer(from, to)
         SFTPTransferWrapper.new(session) do |sftp|
           real_callback = Proc.new do |event, op, *args|
             if callback
@@ -189,7 +181,7 @@ module Capistrano
         end
       end
 
-      def normalize(argument, session)
+      def normalize(argument)
         if argument.is_a?(String)
           argument.gsub(/\$CAPISTRANO:HOST\$/, session.xserver.host)
         elsif argument.respond_to?(:read)
@@ -205,7 +197,6 @@ module Capistrano
       def handle_error(error)
         raise error if error.message.include?('expected a file to upload')
 
-        transfer = session_map[error.session]
         transfer[:error] = error
         transfer[:failed] = true
 

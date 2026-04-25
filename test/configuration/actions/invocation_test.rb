@@ -7,11 +7,11 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     attr_reader :options
     attr_accessor :debug
     attr_accessor :dry_run
-    attr_accessor :servers
+    attr_accessor :server
 
     def initialize
       @options = {}
-      @servers = []
+      @server = nil
     end
 
     def [](*args)
@@ -26,12 +26,12 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
       @options.fetch(*args)
     end
 
-    def filter_servers(options = {})
-      [nil, @servers]
+    def active_server
+      @server
     end
 
-    def execute_on_servers(options = {})
-      yield @servers
+    def execute_on_server(options = {})
+      yield @server
     end
 
     include Capistrano::Configuration::Actions::Invocation
@@ -47,22 +47,22 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     MockConfig.default_io_proc = @original_io_proc
   end
 
-  def test_run_options_should_be_passed_to_execute_on_servers
-    @config.expects(:execute_on_servers).with(:foo => "bar", :eof => true)
+  def test_run_options_should_be_passed_to_execute_on_server
+    @config.expects(:execute_on_server).with(:foo => "bar", :eof => true)
     @config.run "ls", :foo => "bar"
   end
 
   def test_run_will_return_if_dry_run
     @config.expects(:dry_run).returns(true)
-    @config.expects(:execute_on_servers).never
+    @config.expects(:execute_on_server).never
     @config.run "ls", :foo => "bar"
   end
 
   def test_put_wont_transfer_if_dry_run
     config = make_config
     config.dry_run = true
-    config.servers = %w[ foo ]
-    config.expects(:execute_on_servers).never
+    config.server = "foo"
+    config.expects(:execute_on_server).never
     ::Capistrano::Transfer.expects(:process).never
     config.put "foo", "bar", :mode => 0644
   end
@@ -119,7 +119,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_sudo_should_keep_input_stream_open
-    @config.expects(:execute_on_servers).with(:foo => "bar")
+    @config.expects(:execute_on_server).with(:foo => "bar")
     @config.sudo "ls", :foo => "bar"
   end
 
@@ -226,13 +226,13 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_run_only_logs_once
-    @config.servers = [:app, :db]
+    @config.server = :app
 
     logger = mock('logger')
     logger.stubs(:debug).with("executing \"ls\"")
     @config.stubs(:logger).returns(logger)
 
-    @config.expects(:execute_on_servers)
+    @config.expects(:execute_on_server)
 
     @config.run("ls")
   end
@@ -253,15 +253,4 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
       end
     end
 
-    def prepare_command(command, sessions, options)
-      a = mock("channel", :called => true)
-      b = mock("stream", :called => true)
-      c = mock("data", :called => true)
-
-      compare_args = Proc.new do |cmd, sess, opts|
-        cmd == command && sess == sessions && opts == options
-      end
-
-      Capistrano::Command.expects(:process).with(&compare_args)
-    end
 end

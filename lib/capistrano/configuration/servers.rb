@@ -26,20 +26,9 @@ module Capistrano
         @server = server_definition_from(host, options)
       end
 
-      # Identifies the configured server that the given task should be executed on.
-      def find_servers_for_task(task, options={})
-        find_servers
-      end
-
-      # Returns the single configured server. If the HOST environment variable
+      # Returns the configured server. If the HOST environment variable
       # is set, it replaces the configured host name while preserving configured
       # connection options such as user, port, and SSH options.
-      def find_servers(options={})
-        [active_server]
-      end
-
-    protected
-
       def active_server
         raise Capistrano::NoMatchingServersError, "no server configured" unless @server
 
@@ -48,6 +37,8 @@ module Capistrano
 
         host ? server_definition_from(host, connection_options_for(@server)) : @server
       end
+
+    protected
 
       def server_definition_from(host, options={})
         case host
@@ -58,7 +49,7 @@ module Capistrano
           raise ArgumentError, "server must name a single host" if host.empty? || host.include?(',')
           ServerDefinition.new(host, options)
         else
-          raise ArgumentError, "servers must be defined as host strings or ServerDefinition instances"
+          raise ArgumentError, "server must be defined as a host string or ServerDefinition instance"
         end
       end
 

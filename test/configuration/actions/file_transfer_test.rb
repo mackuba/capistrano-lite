@@ -4,7 +4,7 @@ require 'capistrano/configuration/actions/file_transfer'
 class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
   class MockConfig
     include Capistrano::Configuration::Actions::FileTransfer
-    attr_accessor :sessions, :dry_run
+    attr_accessor :session, :dry_run
   end
 
   def setup
@@ -53,9 +53,9 @@ class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
   end
 
   def test_transfer_should_invoke_transfer_on_the_configured_server
-    @config.sessions = { :a => 1 }
-    @config.expects(:execute_on_servers).with(:foo => "bar").yields([:a])
-    Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", [1], {:foo => "bar", :logger => @config.logger})
+    @config.session = 1
+    @config.expects(:execute_on_server).with(:foo => "bar").yields(:a)
+    Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", 1, {:foo => "bar", :logger => @config.logger})
     @config.transfer(:up, "testl.txt", "testr.txt", :foo => "bar")
   end
 end
