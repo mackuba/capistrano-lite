@@ -15,7 +15,7 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 
 | File | Classes/modules defined | Purpose | Main internal dependencies |
 | --- | --- | --- | --- |
-| `lib/capistrano.rb` | none directly | Main library entry point. Loads the Rake compatibility patch, configuration DSL, plugin extension system, and string helper. | `fix_rake_deprecated_dsl`, `configuration`, `extensions`, `ext/string` |
+| `lib/capistrano.rb` | none directly | Main library entry point. Loads the configuration DSL, plugin extension system, and string helper. | `configuration`, `extensions`, `ext/string` |
 | `lib/capistrano/callback.rb` | `Capistrano::Callback`, `ProcCallback`, `TaskCallback` | Represents callbacks registered around task lifecycle events. `ProcCallback` calls a block, `TaskCallback` executes another Capistrano task and prevents direct self-recursion. | Used by `configuration/callbacks` |
 | `lib/capistrano/cli.rb` | `Capistrano::CLI` | Command-line facade that stores raw args and mixes in parsing, execution, UI, and help behavior. | `capistrano`, `cli/execute`, `cli/help`, `cli/options`, `cli/ui` |
 | `lib/capistrano/cli/execute.rb` | `Capistrano::CLI::Execute` | Turns parsed options into a `Configuration`, loads recipes, fires lifecycle hooks, executes requested actions, and handles top-level errors. | `configuration`; calls `Configuration`, `Callbacks`, task execution |
@@ -26,7 +26,7 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/command.rb` | `Capistrano::Command` | Single-session remote command runner. Opens one SSH command channel, handles stdout/stderr callbacks, optional pty, environment injection, placeholder replacement, and remote command errors. | `errors`, `processable`, `Configuration.default_io_proc`, SSH session from `connections` |
 | `lib/capistrano/configuration.rb` | `Capistrano::Configuration` | Central DSL object. Owns logger/debug/dry-run state, initializes the logger, mixes in all configuration and action modules, and unblocks namespace method shadowing. | `logger`; all `configuration/*`; `configuration/actions/*` |
 | `lib/capistrano/configuration/actions/file_transfer.rb` | `Capistrano::Configuration::Actions::FileTransfer` | Adds `put`, `get`, `upload`, `download`, and `transfer` DSL actions. Delegates actual work to `Capistrano::Transfer`. | `transfer`, `Connections#execute_on_server`, `Connections#session`, `run` |
-| `lib/capistrano/configuration/actions/inspect.rb` | `Capistrano::Configuration::Actions::Inspect` | Adds `stream` and `capture` actions for running commands and consuming combined or first-server output. | `errors`, `Invocation#invoke_command`, `sudo` |
+| `lib/capistrano/configuration/actions/inspect.rb` | `Capistrano::Configuration::Actions::Inspect` | Adds `stream` and `capture` actions for running commands and consuming streamed or captured single-server output. | `errors`, `Invocation#invoke_command`, `sudo` |
 | `lib/capistrano/configuration/actions/invocation.rb` | `Capistrano::Configuration::Actions::Invocation` | Adds `run`, `invoke_command`, `sudo`, command defaults, sudo prompt handling, and debug prompting. Converts DSL command calls into sequential `Command` execution. | `command`, `Servers#active_server`, `Connections#execute_on_server`, `CLI.debug_prompt`, `Variables` |
 | `lib/capistrano/configuration/alias_task.rb` | `Capistrano::Configuration::AliasTask` | Adds `alias_task`, duplicating an existing task under a new name. | `Namespaces#find_task`, `#define_task`, `NoSuchTaskError` |
 | `lib/capistrano/configuration/callbacks.rb` | `Capistrano::Configuration::Callbacks` | Adds task lifecycle hooks: `before`, `after`, `on`, `trigger`. Wraps task invocation so callbacks fire around every direct task call. | `callback`, `Execution#invoke_task_directly`, `Execution#find_and_execute_task` |
@@ -40,7 +40,6 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/errors.rb` | `Capistrano::Error`, `CaptureError`, `NoSuchTaskError`, `NoMatchingServersError`, `RemoteError`, `ConnectionError`, `TransferError`, `CommandError`, `LocalArgumentError` | Shared exception hierarchy. Remote errors carry affected hosts. | Used by command, transfer, connections, execution, recipes, deploy adapters |
 | `lib/capistrano/ext/string.rb` | reopens `String` | Adds `String#compact`, collapsing whitespace. Used to make heredoc shell commands one line. | Used by deploy assets and recipe command heredocs |
 | `lib/capistrano/extensions.rb` | `Capistrano::ExtensionProxy`, `Capistrano::EXTENSIONS`, plugin methods | Plugin registration system. Adds proxy methods to `Configuration` instances and delegates unknown plugin method calls back to the configuration. | `Configuration`, `Error` |
-| `lib/capistrano/fix_rake_deprecated_dsl.rb` | none | Workaround for old Rake deprecated object DSL pollution by undefining methods on `Rake::DeprecatedObjectDSL` if present. | Loaded by root entry point |
 | `lib/capistrano/logger.rb` | `Capistrano::Logger` | Level-based logger with TTY color/style formatters, timestamp/prepend/append/replace support, and default formatter registration. | Used by `Configuration`, CLI options, command/transfer/strategy/scm code |
 | `lib/capistrano/processable.rb` | `Capistrano::Processable`, `Processable::SessionAssociation` | Shared single-session Net::SSH event loop helper. Preprocesses/postprocesses the session with `IO.select` and associates raised errors with that session. | Included by `Command`, `Transfer` |
 | `lib/capistrano/recipes/deploy.rb` | recipe methods and tasks only | Primary deployment recipe. Defines deploy variables, helpers (`scm_default`, `depend`, `with_env`, `run_locally`, `try_sudo`, `try_runner`), and tasks for setup, update, update_code, symlinks, upload, rollback, migrations, cleanup, checks, cold deploy, start/stop, pending diff/log, and web maintenance mode. Defaults to Git when `.git` exists and `none` otherwise. | `deploy/scm`, `deploy/strategy`, `dependencies`, `Command`/`Transfer` through configuration actions |
@@ -49,7 +48,7 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/recipes/deploy/local_dependency.rb` | `Capistrano::Deploy::LocalDependency` | Checks local command availability in `PATH`. | Used by `Dependencies`, `Strategy::Copy#check!` |
 | `lib/capistrano/recipes/deploy/remote_dependency.rb` | `Capistrano::Deploy::RemoteDependency` | Checks remote directories, files, writability, commands, gems, deb/rpm packages, and expected command output. | `errors`, `Configuration#invoke_command`, `CommandError` |
 | `lib/capistrano/recipes/deploy/scm.rb` | `Capistrano::Deploy::SCM` | Factory module for dynamic SCM adapter loading by name. | Dynamic requires `deploy/scm/<name>`; raises `Capistrano::Error` |
-| `lib/capistrano/recipes/deploy/scm/base.rb` | `Capistrano::Deploy::SCM::Base`, `Base::LocalProxy` | Abstract SCM adapter API. Provides local-mode variable lookup, command construction, default command handling, logging, and abstract checkout/sync/export/diff/log/query hooks. | `Configuration` variables and logger; subclassed by all SCM adapters |
+| `lib/capistrano/recipes/deploy/scm/base.rb` | `Capistrano::Deploy::SCM::Base`, `Base::LocalProxy` | Abstract SCM adapter API. Provides local-mode variable lookup, command construction, default command handling, logging, and abstract checkout/sync/diff/log/query hooks. | `Configuration` variables and logger; subclassed by all SCM adapters |
 | `lib/capistrano/recipes/deploy/scm/git.rb` | `Capistrano::Deploy::SCM::Git` | Git adapter. Supports clone/export/sync, branches/remotes, shallow clones, submodules, diff/log, SHA resolution, and prompt responses for passwords, passphrases, host keys, and certs. | `scm/base`, `CLI.password_prompt` |
 | `lib/capistrano/recipes/deploy/scm/none.rb` | `Capistrano::Deploy::SCM::None` | Non-SCM adapter for copying a local directory. Intended for `deploy_via :copy`; no real history support. | `scm/base` |
 | `lib/capistrano/recipes/deploy/strategy.rb` | `Capistrano::Deploy::Strategy` | Factory module for dynamic deploy strategy loading by name. | Dynamic requires `deploy/strategy/<name>`; raises `Capistrano::Error` |
@@ -59,11 +58,10 @@ Built-in recipes live under `lib/capistrano/recipes`. The deploy recipe composes
 | `lib/capistrano/recipes/standard.rb` | recipe tasks only | Standard recipe loaded by CLI. Defines `invoke` for one-off remote commands. | `configuration/actions/invocation` |
 | `lib/capistrano/recipes/templates/maintenance.rhtml` | none | ERB/XHTML maintenance-page template used by `deploy:web:disable`. | Read by `recipes/deploy.rb` |
 | `lib/capistrano/server_definition.rb` | `Capistrano::ServerDefinition` | Parses and stores `user@host:port` plus server options. Provides comparison, equality/hash, default user, and string rendering. | Used by `Servers`, `SSH`, `Connections` |
-| `lib/capistrano/ssh.rb` | `Capistrano::SSH`, `SSH::Server` | SSH connection helper. Applies the originating `ServerDefinition` to Net::SSH sessions and builds public-key-only connection options. | `net/ssh`, `ServerDefinition` |
+| `lib/capistrano/ssh.rb` | `Capistrano::SSH`, `SSH::Server` | SSH connection helper. Applies the originating `ServerDefinition` to the Net::SSH session and builds public-key-only connection options. | `net/ssh`, `ServerDefinition` |
 | `lib/capistrano/task_definition.rb` | `Capistrano::TaskDefinition` | Stores task metadata: name, namespace, options, body, description, and rollback behavior. Formats descriptions and computes fully qualified names. | `server_definition`; used by `configuration/namespaces` and `execution` |
 | `lib/capistrano/transfer.rb` | `Capistrano::Transfer`, `Transfer::SFTPTransferWrapper` | Single-session upload/download engine over SFTP or SCP. Normalizes host placeholders and IOs, tracks transfer failure, delegates event processing to `Processable`, and raises `TransferError`. | `net/scp`, `net/sftp`, `processable`, `errors`, SSH session |
 | `lib/capistrano/version.rb` | `Capistrano::Version`, `Capistrano::VERSION` | Version constants and string rendering for Capistrano 2.15.11. | Used by CLI `--version` |
-| `lib/.DS_Store` | none | macOS Finder metadata. Not Ruby code and has no runtime role. | none |
 
 ## Dependency Graph
 
@@ -129,7 +127,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 
 | File | Internal files loaded directly |
 | --- | --- |
-| `lib/capistrano.rb` | `capistrano/fix_rake_deprecated_dsl`, `capistrano/configuration`, `capistrano/extensions`, `capistrano/ext/string` |
+| `lib/capistrano.rb` | `capistrano/configuration`, `capistrano/extensions`, `capistrano/ext/string` |
 | `lib/capistrano/cli.rb` | `capistrano`, `capistrano/cli/execute`, `capistrano/cli/help`, `capistrano/cli/options`, `capistrano/cli/ui` |
 | `lib/capistrano/cli/execute.rb` | `capistrano/configuration` |
 | `lib/capistrano/cli/options.rb` | dynamically `capistrano/version` for `--version` |
@@ -148,7 +146,8 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 | `lib/capistrano/recipes/deploy/dependencies.rb` | `capistrano/recipes/deploy/local_dependency`, `capistrano/recipes/deploy/remote_dependency` |
 | `lib/capistrano/recipes/deploy/remote_dependency.rb` | `capistrano/errors` |
 | `lib/capistrano/recipes/deploy/scm.rb` | dynamically `capistrano/recipes/deploy/scm/<name>` |
-| `lib/capistrano/recipes/deploy/scm/*` | all adapters require `capistrano/recipes/deploy/scm/base` |
+| `lib/capistrano/recipes/deploy/scm/git.rb` | `capistrano/recipes/deploy/scm/base` |
+| `lib/capistrano/recipes/deploy/scm/none.rb` | `capistrano/recipes/deploy/scm/base` |
 | `lib/capistrano/recipes/deploy/strategy.rb` | dynamically `capistrano/recipes/deploy/strategy/<name>` |
 | `lib/capistrano/recipes/deploy/strategy/base.rb` | `capistrano/recipes/deploy/dependencies` |
 | `lib/capistrano/recipes/deploy/strategy/remote_cache.rb` | `capistrano/recipes/deploy/strategy/base` |
@@ -160,7 +159,7 @@ These are the code-level edges visible from `require` and `load`, excluding Ruby
 
 - `Configuration` is the central dependency hub. Most recipe and strategy code calls into it through DSL methods mixed in from its modules.
 - `Command` and `Transfer` depend on `Processable` because they share the same single-session Net::SSH event-loop pattern.
-- `ServerDefinition` is the common server identity object. Server filtering, SSH connection factories, command placeholders, transfer logging, and error reporting all pass it around.
+- `ServerDefinition` is the single configured server identity object. It carries host/user/port/options into the `HOST` override path, SSH connection setup, command placeholders, transfer logging, and error reporting.
 - `Callbacks` wraps `Execution#invoke_task_directly`; task lifecycle hooks therefore apply to all direct task execution paths, including CLI actions and recipe-invoked task aliases.
 - `Deploy::SCM` and `Deploy::Strategy` are factories. They load adapter files by name and instantiate classes from generated constant names.
 - SCM adapters generally do not execute commands. They return shell command strings and prompt handlers. Strategies decide whether those commands run locally, remotely, through caches, or through uploaded archives.
