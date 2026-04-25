@@ -63,14 +63,14 @@ class ConfigurationActionsInspectTest < Test::Unit::TestCase
 
   private
 
-    def config_expects_invoke_command_to_loop_with(channel, *output)
-      class <<@config
-        attr_accessor :script, :channel
-        def invoke_command(*args)
-          script.each { |item| yield channel, :out, item }
-        end
+  def config_expects_invoke_command_to_loop_with(channel, *output)
+    class <<@config
+      attr_accessor :script, :channel
+      def invoke_command(*args)
+        script.each { |item| yield channel, :out, item }
       end
-      @config.channel = channel
-      @config.script = output
     end
+    @config.channel = channel
+    @config.script = output
+  end
 end

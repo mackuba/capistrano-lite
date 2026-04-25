@@ -159,17 +159,17 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
 
   private
 
-    def stack_inspector
-      Proc.new do
-        (state[:trail] ||= []) << current_task.fully_qualified_name
-        data = state[current_task.name] = {}
-        data[:stack] = task_call_frames.map { |frame| frame.task.fully_qualified_name }
-        data[:history] = rollback_requests && rollback_requests.map { |frame| frame.task.fully_qualified_name }
-      end
+  def stack_inspector
+    Proc.new do
+      (state[:trail] ||= []) << current_task.fully_qualified_name
+      data = state[current_task.name] = {}
+      data[:stack] = task_call_frames.map { |frame| frame.task.fully_qualified_name }
+      data[:history] = rollback_requests && rollback_requests.map { |frame| frame.task.fully_qualified_name }
     end
+  end
 
-    def new_task(namespace, name, options = {}, &block)
-      block ||= stack_inspector
-      namespace.tasks[name] = Capistrano::TaskDefinition.new(name, namespace, &block)
-    end
+  def new_task(namespace, name, options = {}, &block)
+    block ||= stack_inspector
+    namespace.tasks[name] = Capistrano::TaskDefinition.new(name, namespace, &block)
+  end
 end

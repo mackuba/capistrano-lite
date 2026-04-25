@@ -38,7 +38,7 @@ module Capistrano
         host ? server_definition_from(host, connection_options_for(@server)) : @server
       end
 
-    protected
+      protected
 
       def server_definition_from(host, options = {})
         case host

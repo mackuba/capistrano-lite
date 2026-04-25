@@ -241,55 +241,55 @@ class CommandTest < Test::Unit::TestCase
 
   private
 
-    def mock_session(channel = nil)
-      stub('session',
-           :open_channel => channel,
-           :preprocess   => true,
-           :postprocess  => true,
-           :listeners    => {},
-           :xserver      => server("capistrano"))
+  def mock_session(channel = nil)
+    stub('session',
+         :open_channel => channel,
+         :preprocess   => true,
+         :postprocess  => true,
+         :listeners    => {},
+         :xserver      => server("capistrano"))
+  end
+
+  class MockChannel < Hash
+    def close
+    end
+  end
+
+  def new_channel(closed, status = nil)
+    ch = MockChannel.new
+    ch.update({ :closed => closed, :host => "capistrano", :server => server("capistrano") })
+    ch[:status] = status if status
+    ch.expects(:close) unless closed
+    ch
+  end
+
+  def setup_for_extracting_channel_action(action = nil, *args)
+    s = server("capistrano")
+    session = mock("session", :xserver => s)
+
+    channel = {}
+    session.expects(:open_channel).yields(channel)
+
+    channel.stubs(:on_data)
+    channel.stubs(:on_extended_data)
+    channel.stubs(:on_request)
+    channel.stubs(:on_close)
+    channel.stubs(:exec)
+    channel.stubs(:send_data)
+
+    if action
+      action = Array(action)
+      channel.expects(action.first).with(*action[1..-1]).yields(channel, *args)
     end
 
-    class MockChannel < Hash
-      def close
-      end
-    end
+    yield channel if block_given?
 
-    def new_channel(closed, status = nil)
-      ch = MockChannel.new
-      ch.update({ :closed => closed, :host => "capistrano", :server => server("capistrano") })
-      ch[:status] = status if status
-      ch.expects(:close) unless closed
-      ch
-    end
+    session
+  end
 
-    def setup_for_extracting_channel_action(action = nil, *args)
-      s = server("capistrano")
-      session = mock("session", :xserver => s)
-
-      channel = {}
-      session.expects(:open_channel).yields(channel)
-
-      channel.stubs(:on_data)
-      channel.stubs(:on_extended_data)
-      channel.stubs(:on_request)
-      channel.stubs(:on_close)
-      channel.stubs(:exec)
-      channel.stubs(:send_data)
-
-      if action
-        action = Array(action)
-        channel.expects(action.first).with(*action[1..-1]).yields(channel, *args)
-      end
-
-      yield channel if block_given?
-
-      session
-    end
-
-    def open_test_channel(command, session, options = {}, &block)
-      cmd = Capistrano::Command.new(command, session, options, &block)
-      cmd.send(:open_channel, session)
-      cmd
-    end
+  def open_test_channel(command, session, options = {}, &block)
+    cmd = Capistrano::Command.new(command, session, options, &block)
+    cmd.send(:open_channel, session)
+    cmd
+  end
 end

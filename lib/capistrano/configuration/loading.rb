@@ -173,33 +173,33 @@ module Capistrano
 
       private
 
-        # Load a recipe from the named file. If +name+ is given, the file will
-        # be reported using that name.
-        def load_from_file(file, name = nil)
-          file = find_file_in_load_path(file) unless File.file?(file)
-          load :string => File.read(file), :name => name || file
-        end
+      # Load a recipe from the named file. If +name+ is given, the file will
+      # be reported using that name.
+      def load_from_file(file, name = nil)
+        file = find_file_in_load_path(file) unless File.file?(file)
+        load :string => File.read(file), :name => name || file
+      end
 
-        def find_file_in_load_path(file)
-          load_paths.each do |path|
-            ["", ".rb"].each do |ext|
-              name = File.join(path, "#{file}#{ext}")
-              return name if File.file?(name)
-            end
-          end
-
-          raise LoadError, "no such file to load -- #{file}"
-        end
-
-        # If a file is being required, the options associated with loading a
-        # recipe are remembered in the recipes_per_feature archive under the
-        # name of the file currently being required.
-        def remember_load(options)
-          if self.class.current_feature
-            list = (self.class.recipes_per_feature[self.class.current_feature] ||= [])
-            list << options
+      def find_file_in_load_path(file)
+        load_paths.each do |path|
+          ["", ".rb"].each do |ext|
+            name = File.join(path, "#{file}#{ext}")
+            return name if File.file?(name)
           end
         end
+
+        raise LoadError, "no such file to load -- #{file}"
+      end
+
+      # If a file is being required, the options associated with loading a
+      # recipe are remembered in the recipes_per_feature archive under the
+      # name of the file currently being required.
+      def remember_load(options)
+        if self.class.current_feature
+          list = (self.class.recipes_per_feature[self.class.current_feature] ||= [])
+          list << options
+        end
+      end
     end
   end
 end

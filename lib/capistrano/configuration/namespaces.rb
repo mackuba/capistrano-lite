@@ -168,32 +168,32 @@ module Capistrano
 
       private
 
-        def all_methods
-          public_methods.concat(protected_methods).concat(private_methods)
+      def all_methods
+        public_methods.concat(protected_methods).concat(private_methods)
+      end
+
+      class Namespace
+        def initialize(name, parent)
+          @parent = parent
+          @name = name
         end
 
-        class Namespace
-          def initialize(name, parent)
-            @parent = parent
-            @name = name
-          end
-
-          def respond_to?(sym, include_priv = false)
-            super || parent.respond_to?(sym, include_priv)
-          end
-
-          def method_missing(sym, *args, &block)
-            if parent.respond_to?(sym)
-              parent.send(sym, *args, &block)
-            else
-              super
-            end
-          end
-
-          include Capistrano::Configuration::AliasTask
-          include Capistrano::Configuration::Namespaces
-          undef :desc, :next_description
+        def respond_to?(sym, include_priv = false)
+          super || parent.respond_to?(sym, include_priv)
         end
+
+        def method_missing(sym, *args, &block)
+          if parent.respond_to?(sym)
+            parent.send(sym, *args, &block)
+          else
+            super
+          end
+        end
+
+        include Capistrano::Configuration::AliasTask
+        include Capistrano::Configuration::Namespaces
+        undef :desc, :next_description
+      end
     end
   end
 end

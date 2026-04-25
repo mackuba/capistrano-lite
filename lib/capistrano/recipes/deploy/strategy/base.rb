@@ -37,42 +37,41 @@ module Capistrano
 
         protected
 
-          # This is to allow helper methods like "run" and "put" to be more
-          # easily accessible to strategy implementations.
-          def method_missing(sym, *args, &block)
-            if configuration.respond_to?(sym)
-              configuration.send(sym, *args, &block)
-            else
-              super
-            end
+        # This is to allow helper methods like "run" and "put" to be more
+        # easily accessible to strategy implementations.
+        def method_missing(sym, *args, &block)
+          if configuration.respond_to?(sym)
+            configuration.send(sym, *args, &block)
+          else
+            super
+          end
+        end
+
+        # A wrapper for Kernel#system that logs the command being executed.
+        def system(*args)
+          cmd = args.join(' ')
+          result = nil
+          logger.trace "executing locally: #{cmd}"
+          elapsed = Benchmark.realtime do
+            result = super
           end
 
-          # A wrapper for Kernel#system that logs the command being executed.
-          def system(*args)
-            cmd = args.join(' ')
-            result = nil
-            logger.trace "executing locally: #{cmd}"
-            elapsed = Benchmark.realtime do
-              result = super
-            end
-
-            logger.trace "command finished in #{(elapsed * 1000).round}ms"
-            result
-          end
+          logger.trace "command finished in #{(elapsed * 1000).round}ms"
+          result
+        end
 
         private
 
-          def logger
-            @logger ||= configuration.logger || Capistrano::Logger.new(:output => STDOUT)
-          end
+        def logger
+          @logger ||= configuration.logger || Capistrano::Logger.new(:output => STDOUT)
+        end
 
-          # The revision to deploy. Must return a real revision identifier,
-          # and not a pseudo-id.
-          def revision
-            configuration[:real_revision]
-          end
+        # The revision to deploy. Must return a real revision identifier,
+        # and not a pseudo-id.
+        def revision
+          configuration[:real_revision]
+        end
       end
-
     end
   end
 end

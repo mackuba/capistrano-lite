@@ -159,42 +159,41 @@ module Capistrano
 
         private
 
-          # A helper for accessing variable values, which takes into
-          # consideration the current mode ("normal" vs. "local").
-          def variable(name, default = nil)
-            if local? && configuration.exists?("local_#{name}".to_sym)
-              return configuration["local_#{name}".to_sym].nil? ? default : configuration["local_#{name}".to_sym]
-            else
-              configuration[name].nil? ? default : configuration[name]
-            end
+        # A helper for accessing variable values, which takes into
+        # consideration the current mode ("normal" vs. "local").
+        def variable(name, default = nil)
+          if local? && configuration.exists?("local_#{name}".to_sym)
+            return configuration["local_#{name}".to_sym].nil? ? default : configuration["local_#{name}".to_sym]
+          else
+            configuration[name].nil? ? default : configuration[name]
           end
+        end
 
-          # A reference to a Logger instance that the SCM can use to log
-          # activity.
-          def logger
-            @logger ||= variable(:logger) || Capistrano::Logger.new(:output => STDOUT)
-          end
+        # A reference to a Logger instance that the SCM can use to log
+        # activity.
+        def logger
+          @logger ||= variable(:logger) || Capistrano::Logger.new(:output => STDOUT)
+        end
 
-          # A helper for accessing the default command name for this SCM. It
-          # simply delegates to the class' +default_command+ method.
-          def default_command
-            self.class.default_command
-          end
+        # A helper for accessing the default command name for this SCM. It
+        # simply delegates to the class' +default_command+ method.
+        def default_command
+          self.class.default_command
+        end
 
-          # A convenience method for accessing the declared repository value.
-          def repository
-            variable(:repository)
-          end
+        # A convenience method for accessing the declared repository value.
+        def repository
+          variable(:repository)
+        end
 
-          def arguments(command = :all)
-            value = variable(:scm_arguments)
-            if value.is_a?(Hash)
-              value = value[command]
-            end
-            value
+        def arguments(command = :all)
+          value = variable(:scm_arguments)
+          if value.is_a?(Hash)
+            value = value[command]
           end
+          value
+        end
       end
-
     end
   end
 end

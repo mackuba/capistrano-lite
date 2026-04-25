@@ -239,18 +239,18 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
 
   private
 
-    def make_config
-      config = MockConfig.new
-      config.stubs(:logger).returns(stub_everything)
-      config
-    end
+  def make_config
+    config = MockConfig.new
+    config.stubs(:logger).returns(stub_everything)
+    config
+  end
 
-    def inspectable_proc
-      Proc.new do |ch, stream, data|
-        ch.called
-        stream.called
-        data.called
-      end
+  def inspectable_proc
+    Proc.new do |ch, stream, data|
+      ch.called
+      stream.called
+      data.called
     end
+  end
 
 end

@@ -261,7 +261,7 @@ class DeploySCMGitTest < Test::Unit::TestCase
 
   private
 
-    def mock_state
-      { :channel => { :host => "abc" } }
-    end
+  def mock_state
+    { :channel => { :host => "abc" } }
+  end
 end

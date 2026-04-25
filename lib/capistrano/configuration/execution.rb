@@ -30,7 +30,6 @@ module Capistrano
         @task_call_frames
       end
 
-
       # The stack of tasks that have registered rollback handlers within the
       # current transaction. If this is nil, then there is no transaction
       # that is currently active.
@@ -100,7 +99,7 @@ module Capistrano
         result
       end
 
-    protected
+      protected
 
       def rollback!
         return if rollback_requests.nil?

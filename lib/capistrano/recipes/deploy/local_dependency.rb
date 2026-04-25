@@ -24,7 +24,7 @@ module Capistrano
         @success
       end
 
-    private
+      private
 
       # Searches the path, looking for the given utility. If an executable
       # file is found that matches the parameter, this returns true.

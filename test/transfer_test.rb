@@ -140,33 +140,33 @@ class TransferTest < Test::Unit::TestCase
 
   private
 
-    class ExceptionWithSession < ::Exception
-      attr_reader :session
+  class ExceptionWithSession < ::Exception
+    attr_reader :session
 
-      def initialize(session)
-        @session = session
-        super()
-      end
+    def initialize(session)
+      @session = session
+      super()
     end
+  end
 
-    def session(host, mode = nil)
-      session = stub('session', :xserver => stub('server', :host => host))
-      case mode
-      when :sftp
-        sftp = stub('sftp')
-        session.expects(:sftp).with(false).returns(sftp)
-        sftp.expects(:connect).yields(sftp).returns(sftp)
-        operation = stub('operation', :active? => false, :[] => nil)
-        sftp.stubs(:upload).returns(operation)
-        sftp.stubs(:download).returns(operation)
-        session.stubs(:xsftp).returns(sftp)
-      when :scp
-        channel = stub('channel', :[]= => nil, :[] => nil, :active? => false, :close => true)
-        scp = stub('scp')
-        scp.stubs(:upload).returns(channel)
-        scp.stubs(:download).returns(channel)
-        session.stubs(:scp).returns(scp)
-      end
-      session
+  def session(host, mode = nil)
+    session = stub('session', :xserver => stub('server', :host => host))
+    case mode
+    when :sftp
+      sftp = stub('sftp')
+      session.expects(:sftp).with(false).returns(sftp)
+      sftp.expects(:connect).yields(sftp).returns(sftp)
+      operation = stub('operation', :active? => false, :[] => nil)
+      sftp.stubs(:upload).returns(operation)
+      sftp.stubs(:download).returns(operation)
+      session.stubs(:xsftp).returns(sftp)
+    when :scp
+      channel = stub('channel', :[]= => nil, :[] => nil, :active? => false, :close => true)
+      scp = stub('scp')
+      scp.stubs(:upload).returns(channel)
+      scp.stubs(:download).returns(channel)
+      session.stubs(:scp).returns(scp)
     end
+    session
+  end
 end

@@ -100,7 +100,7 @@ module Capistrano
         s
       end
 
-    private
+      private
 
       def try(command, options)
         return unless @success # short-circuit evaluation

@@ -326,35 +326,35 @@ class DeployStrategyCopyTest < Test::Unit::TestCase
 
   private
 
-    def prepare_directory_tree!(cache, exclude = false)
-      Dir.expects(:glob).with("*", File::FNM_DOTMATCH).returns([".", "..", "app", "app{1}", "foo.txt"])
-      File.expects(:ftype).with("app").returns("directory")
-      File.expects(:ftype).with("app{1}").returns("directory")
-      FileUtils.expects(:mkdir).with("/temp/dir/1234567890/app")
-      FileUtils.expects(:mkdir).with("/temp/dir/1234567890/app{1}")
-      File.expects(:ftype).with("foo.txt").returns("file")
-      FileUtils.expects(:ln).with("foo.txt", "/temp/dir/1234567890/foo.txt")
+  def prepare_directory_tree!(cache, exclude = false)
+    Dir.expects(:glob).with("*", File::FNM_DOTMATCH).returns([".", "..", "app", "app{1}", "foo.txt"])
+    File.expects(:ftype).with("app").returns("directory")
+    File.expects(:ftype).with("app{1}").returns("directory")
+    FileUtils.expects(:mkdir).with("/temp/dir/1234567890/app")
+    FileUtils.expects(:mkdir).with("/temp/dir/1234567890/app{1}")
+    File.expects(:ftype).with("foo.txt").returns("file")
+    FileUtils.expects(:ln).with("foo.txt", "/temp/dir/1234567890/foo.txt")
 
-      Dir.expects(:glob).with("app/*", File::FNM_DOTMATCH).returns(["app/.", "app/..", "app/bar.txt"])
-      Dir.expects(:glob).with("app\\{1\\}/*", File::FNM_DOTMATCH).returns(["app{1}/.", "app{1}/.."])
+    Dir.expects(:glob).with("app/*", File::FNM_DOTMATCH).returns(["app/.", "app/..", "app/bar.txt"])
+    Dir.expects(:glob).with("app\\{1\\}/*", File::FNM_DOTMATCH).returns(["app{1}/.", "app{1}/.."])
 
-      unless exclude
-      File.expects(:ftype).with("app/bar.txt").returns("file")
-        FileUtils.expects(:ln).with("app/bar.txt", "/temp/dir/1234567890/app/bar.txt")
-      end
+    unless exclude
+    File.expects(:ftype).with("app/bar.txt").returns("file")
+      FileUtils.expects(:ln).with("app/bar.txt", "/temp/dir/1234567890/app/bar.txt")
     end
+  end
 
-    def prepare_standard_compress_and_copy!
-      Dir.expects(:chdir).with("/temp/dir").yields
-      @strategy.expects(:system).with("tar czf 1234567890.tar.gz 1234567890")
-      @strategy.expects(:upload).with("/temp/dir/1234567890.tar.gz", "/tmp/1234567890.tar.gz")
-      @strategy.expects(:run).with("cd /u/apps/test/releases && tar xzf /tmp/1234567890.tar.gz && rm /tmp/1234567890.tar.gz")
+  def prepare_standard_compress_and_copy!
+    Dir.expects(:chdir).with("/temp/dir").yields
+    @strategy.expects(:system).with("tar czf 1234567890.tar.gz 1234567890")
+    @strategy.expects(:upload).with("/temp/dir/1234567890.tar.gz", "/tmp/1234567890.tar.gz")
+    @strategy.expects(:run).with("cd /u/apps/test/releases && tar xzf /tmp/1234567890.tar.gz && rm /tmp/1234567890.tar.gz")
 
-      mock_file = mock("file")
-      mock_file.expects(:puts).with("154")
-      File.expects(:open).with("/temp/dir/1234567890/REVISION", "w").yields(mock_file)
+    mock_file = mock("file")
+    mock_file.expects(:puts).with("154")
+    File.expects(:open).with("/temp/dir/1234567890/REVISION", "w").yields(mock_file)
 
-      FileUtils.expects(:rm).with("/temp/dir/1234567890.tar.gz")
-      FileUtils.expects(:rm_rf).with("/temp/dir/1234567890")
-    end
+    FileUtils.expects(:rm).with("/temp/dir/1234567890.tar.gz")
+    FileUtils.expects(:rm_rf).with("/temp/dir/1234567890")
+  end
 end
