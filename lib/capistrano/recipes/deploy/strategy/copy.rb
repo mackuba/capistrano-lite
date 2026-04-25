@@ -67,7 +67,7 @@ module Capistrano
           rollback_changes
         end
 
-        def build directory
+        def build(directory)
           execute "running build script on #{directory}" do
             Dir.chdir(directory) { system(build_script) }
           end if build_script
@@ -105,12 +105,12 @@ module Capistrano
           remove_excluded_files if copy_exclude.any?
         end
 
-        def execute description, &block
+        def execute(description, &block)
           logger.debug description
           handle_system_errors &block
         end
 
-        def handle_system_errors &block
+        def handle_system_errors(&block)
           block.call
           raise_command_failed if last_command_failed?
         end
@@ -146,46 +146,46 @@ module Capistrano
           FileUtils.mkdir_p(destination)
         end
 
-        def copy_files files
+        def copy_files(files)
           files.each { |name| process_file(name) }
         end
 
-        def process_file name
+        def process_file(name)
           send "copy_#{filetype(name)}", name
         end
 
-        def filetype name
+        def filetype(name)
           filetype = File.ftype name
           filetype = "file" unless ["link", "directory"].include? filetype
           filetype
         end
 
-        def copy_link name
+        def copy_link(name)
           FileUtils.ln_s(File.readlink(name), File.join(destination, name))
         end
 
-        def copy_directory name
+        def copy_directory(name)
           FileUtils.mkdir(File.join(destination, name))
           copy_files(queue_files(name))
         end
 
-        def copy_file name
+        def copy_file(name)
           FileUtils.ln(name, File.join(destination, name))
         end
 
-        def queue_files directory = nil
+        def queue_files(directory = nil)
           Dir.glob(pattern_for(directory), File::FNM_DOTMATCH).reject! { |file| excluded_files_contain? file }
         end
 
-        def pattern_for directory
+        def pattern_for(directory)
           !directory.nil? ? "#{escape_globs(directory)}/*" : "*"
         end
 
-        def escape_globs path
+        def escape_globs(path)
           path.gsub(/[*?{}\[\]]/, '\\\\\\&')
         end
 
-        def excluded_files_contain? file
+        def excluded_files_contain?(file)
           copy_exclude.any? { |p| File.fnmatch(p, file) } or [ ".", ".."].include? File.basename(file)
         end
 
