@@ -1,67 +1,34 @@
-## Capistrano
+# Capistrano Lite
 
-[![Build
-Status](https://secure.travis-ci.org/capistrano/capistrano.png)](http://travis-ci.org/capistrano/capistrano)[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/capistrano/capistrano)
+Capistrano Lite (temporary name) is a simplified fork of old [Capistrano](https://github.com/capistrano/capistrano) 2.x.
 
 
-Capistrano is a utility and framework for executing commands on a remote
-machine, via SSH. It uses a simple DSL (borrowed in part from
-[Rake](http://rake.rubyforge.org/)) that allows you to define _tasks_.
+## Project description
 
-Capistrano was originally designed to simplify and automate deployment of web
-applications to distributed environments, and originally came bundled with a set
-of tasks designed for deploying Rails applications.
+Capistrano Lite is a tool for deploying Ruby applications to a server, based on the code of the classic deploy tool Capistrano, the older 2.x version, but simplified and cleaned up, with various features removed that I decided I'm never going to need myself. The focus is on deploying Ruby apps to a single host from Git over SSH. It keeps the core deploy DSL with compatibility maintained where possible, the git remote cache and copy strategies, release rotation with rollbacks, and the logging/formatting code.
 
-## Documentation
 
-* [https://github.com/capistrano/capistrano/wiki](https://github.com/capistrano/capistrano/wiki)
+### What is removed
 
-## DEPENDENCIES
+* server roles, multiple servers and "primary" server designation – you only define a single server hostname and everything happens there
+* support for any parallel execution
+* multiple stages
+* SSH gateways
+* password authentication for SSH and Git
+* Windows support
+* REPL shell
+* legacy SCMs – only `:git` and `:none` are left
+* most deploy strategies – only `:copy` and `:remote_cache` are left
+* any legacy/deprecated code from Capistrano 1.x era or for ancient versions of Ruby
 
-* [Net::SSH](http://net-ssh.rubyforge.org)
-* [Net::SFTP](http://net-ssh.rubyforge.org)
-* [Net::SCP](http://net-ssh.rubyforge.org)
-* [HighLine](http://highline.rubyforge.org)
-* [Ruby](http://www.ruby-lang.org/en/) &#x2265; 1.8.7
 
-If you want to run the tests, you'll also need to install the dependencies with
-Bundler, see the `Gemfile` within .
+### Other API changes
 
-## ASSUMPTIONS
+* default deploy path is `/var/www/#{application}`
+* `server` method in the DSL only accepts a single string + options
 
-Capistrano is "opinionated software", which means it has very firm ideas about
-how things ought to be done, and tries to force those ideas on you. Some of the
-assumptions behind these opinions are:
 
-* You are using SSH to access the remote server.
-* You have public keys in place for SSH access.
+### Project status
 
-Do not expect these assumptions to change.
-
-## USAGE
-
-In general, you'll use Capistrano as follows:
-
-* Create a recipe file ("capfile" or "Capfile").
-* Use the `cap` script to execute your recipe.
-
-Use the `cap` script as follows:
-
-    cap sometask
-
-By default, the script will look for a file called one of `capfile` or
-`Capfile`. The `sometask` text indicates which task to execute. You can do
-"cap -h" to see all the available options and "cap -T" to see all the available
-tasks.
-
-## CONTRIBUTING:
-
-* Fork Capistrano
-* Create a topic branch - `git checkout -b my_branch`
-* Rebase your branch so that all your changes are reflected in one
-  commit
-* Push to your branch - `git push origin my_branch`
-* Create a Pull Request from your branch, include as much documentation
-  as you can in the commit message/pull request, following these
-[guidelines on writing a good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
-* That's it!
+> [!WARNING]
+> This project is an early, untested alpha version. Most of the work stripping out various parts from the old codebase was done using Codex AI coding agent (with manual code reviews to some degree). Use with caution.
