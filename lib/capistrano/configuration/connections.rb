@@ -13,17 +13,6 @@ module Capistrano
         @failed = false
       end
 
-      # Indicate that the configured server could not be connected to.
-      def failed!
-        @failed = true
-      end
-
-      # Query whether previous connection attempts to the configured server
-      # have failed.
-      def failed?
-        @failed
-      end
-
       # Used to force a connection to be made to the current task's server.
       # Connections are normally made lazily in Capistrano--you can use this
       # to force them open before performing some operation that might be
@@ -53,7 +42,7 @@ module Capistrano
 
         task = current_task
         server = active_server
-        return if task && task.continue_on_error? && failed?
+        return if task && task.continue_on_error? && @failed
 
         logger.trace "server: #{server.host.inspect}"
 
@@ -61,7 +50,7 @@ module Capistrano
           establish_connection_to(server)
         rescue ConnectionError => error
           raise error unless task && task.continue_on_error?
-          failed!
+          @failed = true
           return
         end
 
@@ -69,7 +58,7 @@ module Capistrano
           yield server
         rescue RemoteError => error
           raise error unless task && task.continue_on_error?
-          failed!
+          @failed = true
         end
       end
     end

@@ -39,22 +39,12 @@ module Capistrano
           @recipes_per_feature ||= {}
         end
 
-        # Used internally to determine what the current "feature" being
-        # required is. This is used to track which files load which recipes
-        # via require.
-
-        def current_feature
-          @current_feature
-        end
-
         # Used internally to specify the current file being required, so that
         # any recipes loaded by that file can be remembered. This allows
         # recipes loaded via require to be correctly reloaded in different
         # Configuration instances in the same Ruby instance.
 
-        def current_feature=(feature)
-          @current_feature = feature
-        end
+        attr_accessor :current_feature
       end
 
       # The load paths used for locating recipe files.

@@ -46,7 +46,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_initialize_should_initialize_session_and_call_original_initialize
     assert @config.original_initialize_called
     assert_nil @config.session
-    assert !@config.failed?
+    assert_false @config.instance_variable_get('@failed')
   end
 
   def test_establish_connection_to_should_accept_a_single_server
@@ -139,14 +139,16 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
         flunk "should not yield after connection failure"
       end
     }
-    assert @config.failed?
+    assert @config.instance_variable_get('@failed')
   end
 
   def test_execute_on_server_should_skip_failed_host_with_on_errors_continue
     @config.current_task = mock_task(:on_error => :continue)
     @config.active_server = server("cap1")
-    @config.failed!
+    @config.instance_variable_set('@failed', true)
+
     Capistrano::SSH.expects(:connect).never
+
     @config.execute_on_server do
       flunk "should not yield for failed host"
     end
@@ -162,7 +164,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
       error.hosts = [host]
       raise error
     end
-    assert @config.failed?
+    assert @config.instance_variable_get('@failed')
   end
 
   def test_connect_should_establish_connection_to_server_in_scope
