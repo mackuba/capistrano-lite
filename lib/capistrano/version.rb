@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Capistrano
   class Version
     MAJOR = 2

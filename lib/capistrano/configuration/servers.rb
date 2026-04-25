@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'capistrano/server_definition'
 require 'capistrano/errors'
 

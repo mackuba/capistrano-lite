@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'capistrano/errors'
 
 module Capistrano
@@ -25,13 +27,15 @@ module Capistrano
         # current task, collects it's stdout into a string, and returns the
         # string. The command is invoked via #invoke_command.
         def capture(command, options = {})
-          output = ""
+          output = "".dup
+
           invoke_command(command, options.merge(:once => true, :eof => !command.include?(sudo))) do |ch, stream, data|
             case stream
             when :out then output << data
             when :err then warn "[err :: #{ch[:server]}] #{data}"
             end
           end
+
           output
         end
 

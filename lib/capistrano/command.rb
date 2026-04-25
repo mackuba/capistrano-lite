@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'benchmark'
 require 'capistrano/errors'
 require 'capistrano/processable'
@@ -156,7 +158,7 @@ module Capistrano
       @environment ||= if String === options[:env]
         "env #{options[:env]}"
       else
-        options[:env].inject("env") do |string, (name, value)|
+        options[:env].inject("env".dup) do |string, (name, value)|
           value = value.to_s.gsub(/[ "]/) { |m| "\\#{m}" }
           string << " #{name}=#{value}"
         end

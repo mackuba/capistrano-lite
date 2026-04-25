@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'capistrano'
 require 'capistrano/cli/help'
 require 'capistrano/cli/options'

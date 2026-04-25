@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'capistrano/server_definition'
 
 module Capistrano
@@ -38,13 +40,16 @@ module Capistrano
         description = @desc || ""
 
         indentation = description[/\A\s+/]
+
         if indentation
-          reformatted_description = ""
+          reformatted_description = "".dup
+
           description.strip.each_line do |line|
             line = line.chomp.sub(/^#{indentation}/, "")
             line = line.gsub(/#{indentation}\s*/, " ") if line[/^\S/]
             reformatted_description << line << "\n"
           end
+
           description = reformatted_description
         end
 

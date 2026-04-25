@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 desc <<-DESC
   Invoke a single command on the remote server. This is useful for performing \
   one-off commands that may not require a full task to be written for them. \

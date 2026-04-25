@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Capistrano
   class Logger #:nodoc:
     attr_accessor :level, :device, :disable_formatters

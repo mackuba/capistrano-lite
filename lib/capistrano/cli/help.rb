@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Capistrano
   class CLI
     module Help
@@ -94,7 +96,8 @@ module Capistrano
       end
 
       def format_text(text) #:nodoc:
-        formatted = ""
+        formatted = "".dup
+
         text.each_line do |line|
           indentation = line[/^\s+/] || ""
           indentation_size = indentation.split(//).inject(0) { |c,s| c + (s[0] == ?\t ? 8 : 1) }
@@ -107,6 +110,7 @@ module Capistrano
             formatted << lines.map { |l| "#{indentation}#{l}\n" }.join
           end
         end
+
         formatted
       end
 

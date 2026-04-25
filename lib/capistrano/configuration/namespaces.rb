@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'capistrano/configuration/alias_task'
 require 'capistrano/task_definition'
 
