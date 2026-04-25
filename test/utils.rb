@@ -2,7 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'test/unit'
-require 'mocha'
+require 'mocha/test_unit'
 
 require 'capistrano/server_definition'
 

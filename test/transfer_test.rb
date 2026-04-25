@@ -50,7 +50,7 @@ class TransferTest < Test::Unit::TestCase
       s = session('app1', :sftp)
 
       s.xsftp.expects("#{direction}load".to_sym).with("from-#{s.xserver.host}", "to-#{s.xserver.host}",
-        :properties => { :server => s.xserver, :host => s.xserver.host })
+        { :properties => { :server => s.xserver, :host => s.xserver.host } })
 
       transfer = Capistrano::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s)
     end
@@ -58,7 +58,7 @@ class TransferTest < Test::Unit::TestCase
     define_method("test_scp_#{direction}load_from_file_to_file_should_normalize_from_and_to") do
       s = session('app1', :scp)
 
-      s.scp.expects("#{direction}load".to_sym).returns({}).with("from-#{s.xserver.host}", "to-#{s.xserver.host}", :via => :scp)
+      s.scp.expects("#{direction}load".to_sym).returns({}).with("from-#{s.xserver.host}", "to-#{s.xserver.host}", { :via => :scp })
 
       transfer = Capistrano::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s, :via => :scp)
     end

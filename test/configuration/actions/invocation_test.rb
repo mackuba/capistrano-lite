@@ -49,7 +49,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_run_options_should_be_passed_to_execute_on_server
-    @config.expects(:execute_on_server).with(:foo => "bar", :eof => true)
+    @config.expects(:execute_on_server).with({ :foo => "bar", :eof => true })
     @config.run "ls", :foo => "bar"
   end
 
@@ -120,7 +120,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_sudo_should_keep_input_stream_open
-    @config.expects(:execute_on_server).with(:foo => "bar")
+    @config.expects(:execute_on_server).with({ :foo => "bar" })
     @config.sudo "ls", :foo => "bar"
   end
 
@@ -136,7 +136,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_sudo_should_pass_options_through_to_run
-    @config.expects(:run).with("sudo -p 'sudo password: ' ls", :foo => "bar")
+    @config.expects(:run).with("sudo -p 'sudo password: ' ls", { :foo => "bar" })
     @config.sudo "ls", :foo => "bar"
   end
 
@@ -217,12 +217,12 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_invoke_command_should_default_to_run
-    @config.expects(:run).with("ls", :once => true)
+    @config.expects(:run).with("ls", { :once => true })
     @config.invoke_command("ls", :once => true)
   end
 
   def test_invoke_command_should_delegate_to_method_identified_by_via
-    @config.expects(:foobar).with("ls", :once => true)
+    @config.expects(:foobar).with("ls", { :once => true })
     @config.invoke_command("ls", :once => true, :via => :foobar)
   end
 

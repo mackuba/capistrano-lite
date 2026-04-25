@@ -13,12 +13,12 @@ class ConfigurationActionsInspectTest < Test::Unit::TestCase
   end
 
   def test_stream_should_pass_options_through_to_run
-    @config.expects(:invoke_command).with("tail -f foo.log", :once => true, :eof => true)
+    @config.expects(:invoke_command).with("tail -f foo.log", { :once => true, :eof => true })
     @config.stream("tail -f foo.log", :once => true)
   end
 
   def test_stream_with_sudo_should_avoid_closing_stdin
-    @config.expects(:invoke_command).with("sudo tail -f foo.log", :once => true, :eof => false)
+    @config.expects(:invoke_command).with("sudo tail -f foo.log", { :once => true, :eof => false })
     @config.stream("sudo tail -f foo.log", :once => true)
   end
 
@@ -39,12 +39,12 @@ class ConfigurationActionsInspectTest < Test::Unit::TestCase
   end
 
   def test_capture_should_pass_options_merged_with_once_to_run
-    @config.expects(:invoke_command).with("hostname", :foo => "bar", :once => true, :eof => true)
+    @config.expects(:invoke_command).with("hostname", { :foo => "bar", :once => true, :eof => true })
     @config.capture("hostname", :foo => "bar")
   end
 
   def test_capture_with_sudo_should_avoid_closing_stdin
-    @config.expects(:invoke_command).with("sudo hostname", :foo => "bar", :once => true, :eof => false)
+    @config.expects(:invoke_command).with("sudo hostname", { :foo => "bar", :once => true, :eof => false })
     @config.capture("sudo hostname", :foo => "bar")
   end
 

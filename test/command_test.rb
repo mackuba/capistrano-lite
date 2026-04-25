@@ -3,6 +3,18 @@ require 'capistrano/command'
 require 'capistrano/configuration'
 
 class CommandTest < Test::Unit::TestCase
+  class FakeChannel < Hash
+    def exec(*); end
+    def send_data(*); end
+    def eof!; end
+    def close; end
+    def request_pty(*); end
+    def on_data(*); end
+    def on_extended_data(*); end
+    def on_request(*); end
+    def on_close(*); end
+  end
+
   def test_command_should_keep_session
     session = mock_session
     assert_equal session, Capistrano::Command.new("ls", session).session
@@ -267,15 +279,13 @@ class CommandTest < Test::Unit::TestCase
     s = server("capistrano")
     session = mock("session", :xserver => s)
 
-    channel = {}
+    channel = FakeChannel.new
     session.expects(:open_channel).yields(channel)
 
     channel.stubs(:on_data)
     channel.stubs(:on_extended_data)
     channel.stubs(:on_request)
     channel.stubs(:on_close)
-    channel.stubs(:exec)
-    channel.stubs(:send_data)
 
     if action
       action = Array(action)
