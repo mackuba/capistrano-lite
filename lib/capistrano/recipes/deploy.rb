@@ -29,7 +29,7 @@ _cset(:repository)  { abort "Please specify the repository that houses your appl
 _cset(:scm) { scm_default }
 _cset :deploy_via, :remote_cache
 
-_cset(:deploy_to) { "/u/apps/#{application}" }
+_cset(:deploy_to) { "/var/www/#{application}" }
 _cset(:revision)  { source.head }
 
 _cset :rails_env, "production"
