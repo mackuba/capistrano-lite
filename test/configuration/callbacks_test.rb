@@ -39,15 +39,15 @@ class ConfigurationCallbacksTest < Test::Unit::TestCase
     @config.before :bar, :foo, "bing:blang", :zip => :zing
   end
 
-  def test_before_should_map_before_deploy_symlink
-    @config.before "deploy:symlink", "bing:blang", "deploy:symlink"
+  def test_before_should_keep_task_names_as_given
+    @config.before "deploy:create_symlink", "bing:blang", "deploy:create_symlink"
     assert_equal "bing:blang", @config.callbacks[:before][0].source
     assert_equal "deploy:create_symlink", @config.callbacks[:before][1].source
     assert_equal ["deploy:create_symlink"], @config.callbacks[:before][1].only
   end
 
-  def test_before_should_map_before_deploy_symlink_array
-    @config.before ["deploy:symlink", "bingo:blast"], "bing:blang"
+  def test_before_should_keep_task_name_arrays_as_given
+    @config.before ["deploy:create_symlink", "bingo:blast"], "bing:blang"
     assert_equal ["deploy:create_symlink", "bingo:blast"], @config.callbacks[:before].last.only
   end
 
@@ -56,15 +56,15 @@ class ConfigurationCallbacksTest < Test::Unit::TestCase
     @config.after :bar, :foo, "bing:blang", :zip => :zing
   end
 
-  def test_after_should_map_before_deploy_symlink
-    @config.after "deploy:symlink", "bing:blang", "deploy:symlink"
+  def test_after_should_keep_task_names_as_given
+    @config.after "deploy:create_symlink", "bing:blang", "deploy:create_symlink"
     assert_equal "bing:blang", @config.callbacks[:after][0].source
     assert_equal "deploy:create_symlink", @config.callbacks[:after][1].source
     assert_equal ["deploy:create_symlink"], @config.callbacks[:after][1].only
   end
 
-  def test_after_should_map_before_deploy_symlink_array
-    @config.after ["deploy:symlink", "bingo:blast"], "bing:blang"
+  def test_after_should_keep_task_name_arrays_as_given
+    @config.after ["deploy:create_symlink", "bingo:blast"], "bing:blang"
     assert_equal ["deploy:create_symlink", "bingo:blast"], @config.callbacks[:after].last.only
   end
 

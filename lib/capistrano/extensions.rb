@@ -50,8 +50,4 @@ module Capistrano
     return false
   end
 
-  def self.configuration(*args) #:nodoc:
-    warn "[DEPRECATION] Capistrano.configuration is deprecated. Use Capistrano::Configuration.instance instead"
-    Capistrano::Configuration.instance(*args)
-  end
 end

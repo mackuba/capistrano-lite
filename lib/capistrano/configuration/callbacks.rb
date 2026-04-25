@@ -106,28 +106,8 @@ module Capistrano
         elsif block
           callbacks[event] << ProcCallback.new(block, options)
         else
-          args = filter_deprecated_tasks(args)
-          options[:only] = filter_deprecated_tasks(options[:only])
-          options[:except] = filter_deprecated_tasks(options[:except])
-
           callbacks[event].concat(args.map { |name| TaskCallback.new(self, name, options) })
         end
-      end
-
-      # Filters the given task name or names and attempts to replace deprecated tasks with their equivalents.
-      def filter_deprecated_tasks(names)
-        deprecation_msg = "[Deprecation Warning] This API has changed, please hook `deploy:create_symlink` instead of" \
-          " `deploy:symlink`."
-
-        if names == "deploy:symlink"
-          warn deprecation_msg
-          names = "deploy:create_symlink"
-        elsif names.is_a?(Array) && names.include?("deploy:symlink")
-          warn deprecation_msg
-          names = names.map { |name| name == "deploy:symlink" ? "deploy:create_symlink" : name }
-        end
-
-        names
       end
 
       # Trigger the named event for the named task. All associated callbacks
