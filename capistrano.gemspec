@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'benchmark', '~> 0.5'
   spec.add_dependency 'highline', '>= 0'
-  spec.add_dependency 'net-ssh', '>= 2.0.14'
-  spec.add_dependency 'net-sftp', '>= 2.0.0'
-  spec.add_dependency 'net-scp', '>= 1.0.0'
+  spec.add_dependency 'net-ssh', '>= 7.2'
+  spec.add_dependency 'net-sftp', '>= 3.0'
+  spec.add_dependency 'net-scp', '>= 3.0'
 end
