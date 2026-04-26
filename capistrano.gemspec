@@ -20,6 +20,8 @@ Gem::Specification.new do |spec|
     "README.md"
   ]
 
+  spec.required_ruby_version = ">= 3.0.0"
+
   spec.add_dependency 'benchmark', '~> 0.5'
   spec.add_dependency 'highline', '>= 0'
   spec.add_dependency 'net-ssh', '>= 2.0.14'
