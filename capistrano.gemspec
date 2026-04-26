@@ -27,4 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'net-ssh', '>= 7.2'
   spec.add_dependency 'net-sftp', '>= 3.0'
   spec.add_dependency 'net-scp', '>= 3.0'
+
+  # used silently by net-ssh but undeclared
+  spec.add_dependency 'logger'
 end
