@@ -11,6 +11,7 @@ module Capistrano
       # the commands that need to be executed--they do not execute the commands
       # themselves. In this way, the deployment method may execute the commands
       # either locally or remotely, as necessary.
+
       class Base
         class << self
           # If no parameters are given, it returns the current configured
@@ -190,9 +191,11 @@ module Capistrano
 
         def arguments(command = :all)
           value = variable(:scm_arguments)
+
           if value.is_a?(Hash)
             value = value[command]
           end
+
           value
         end
       end

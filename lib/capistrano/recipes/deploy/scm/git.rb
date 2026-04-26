@@ -20,8 +20,7 @@ module Capistrano
       #   * Can deploy different branches, tags, or any SHA1 easily.
       #   * Supports prompting for password / passphrase upon checkout.
       #     (I am amazed at how some plugins don't do this)
-      #   * Supports :scm_command, :scm_password, :scm_passphrase Capistrano
-      #     directives.
+      #   * Supports :scm_command, :scm_passphrase Capistrano directives.
       #
       # CONFIGURATION
       # -------------
@@ -67,14 +66,7 @@ module Capistrano
       #
       #   set :scm_command, "/opt/local/bin/git"
       #
-      # Set <tt>:scm_password</tt> to the password needed to clone your repo
-      # if you don't have password-less (public key) entry:
-      #
-      #   set :scm_password, "my_secret'
-      #
-      # Otherwise, you will be prompted for a password.
-      #
-      # <tt>:scm_passphrase</tt> is also supported.
+      # <tt>:scm_passphrase</tt> is supported for the public key passphrase.
       #
       # The remote cache strategy is also supported.
       #
@@ -128,6 +120,7 @@ module Capistrano
           # Add an option for the branch name so :git_shallow_clone works with branches
           args << "-b #{variable(:branch)}" unless variable(:branch).nil? || variable(:branch) == revision
           args << "-o #{remote}" unless remote == 'origin'
+
           if depth = variable(:git_shallow_clone)
             args << "--depth #{depth}"
           end
@@ -141,7 +134,8 @@ module Capistrano
           if variable(:git_enable_submodules)
             execute << "#{git} submodule #{verbose} init"
             execute << "#{git} submodule #{verbose} sync"
-            if false == variable(:git_submodules_recursive)
+
+            if variable(:git_submodules_recursive) == false
               execute << "#{git} submodule #{verbose} update --init"
             else
               execute << %Q(export GIT_RECURSIVE=$([ ! "`#{git} --version`" \\< "git version 1.6.5" ] && echo --recursive))
@@ -173,6 +167,7 @@ module Capistrano
           # time. This could cause wierd-ness in the remote cache if the url
           # changes between calls, but as long as the repositories are all
           # based from each other it should still work fine.
+
           if remote != 'origin'
             execute << "#{git} config remote.#{remote}.url #{variable(:repository)}"
             execute << "#{git} config remote.#{remote}.fetch +refs/heads/*:refs/remotes/#{remote}/*"
@@ -184,7 +179,8 @@ module Capistrano
           if variable(:git_enable_submodules)
             execute << "#{git} submodule #{verbose} init"
             execute << "#{git} submodule #{verbose} sync"
-            if false == variable(:git_submodules_recursive)
+
+            if variable(:git_submodules_recursive) == false
               execute << "#{git} submodule #{verbose} update --init"
             else
               execute << %Q(export GIT_RECURSIVE=$([ ! "`#{git} --version`" \\< "git version 1.6.5" ] && echo --recursive))
@@ -201,8 +197,11 @@ module Capistrano
 
         # Returns a string of diffs between two revisions
         def diff(from, to = nil)
-          return scm :diff, from unless to
-          scm :diff, "#{from}..#{to}"
+          if to
+            scm :diff, "#{from}..#{to}"
+          else
+            scm :diff, from
+          end
         end
 
         # Returns a log of changes between the two revisions (inclusive).
@@ -214,11 +213,14 @@ module Capistrano
         # or partial sha or something - it will return the sha if you pass a sha, too
         def query_revision(revision)
           raise ArgumentError, "Deploying remote branches is no longer supported.  Specify the remote branch as a local branch for the git repository you're deploying from (ie: '#{revision.gsub('origin/', '')}' rather than '#{revision}')." if revision =~ /^origin\//
+
           return revision if revision =~ /^[0-9a-f]{40}$/
+
           command = scm('ls-remote', repository, revision)
           result = yield(command)
           revdata = result.split(/[\t\n]/)
           newrev = nil
+
           revdata.each_slice(2) do |refs|
             rev, ref = *refs
             if ref.sub(/refs\/.*?\//, '').strip == revision.to_s
@@ -226,6 +228,7 @@ module Capistrano
               break
             end
           end
+
           return newrev if newrev =~ /^[0-9a-f]{40}$/
 
           # If sha is not found on remote, try expanding from local repository

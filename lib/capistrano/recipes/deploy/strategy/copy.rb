@@ -10,7 +10,7 @@ module Capistrano
 
       # This class implements the strategy for deployments which work
       # by preparing the source code locally, compressing it, copying the
-      # file to each target host, and uncompressing it to the deployment
+      # file to the target host, and uncompressing it to the deployment
       # directory.
       #
       # By default, the SCM checkout command is used to obtain the local copy
@@ -55,10 +55,13 @@ module Capistrano
       # Note that if you use :copy_cache, the :build_script is used on the
       # cache and thus you get faster compilation if your script does not
       # recompile everything.
+
       class Copy < Base
+
         # Obtains a copy of the source code locally (via the #command method),
         # compresses it to a single file, copies that file to the target
         # server, and uncompresses it into the deployment directory.
+
         def deploy!
           copy_cache ? run_copy_cache_strategy : run_copy_strategy
 
@@ -70,9 +73,11 @@ module Capistrano
         end
 
         def build(directory)
+          return unless build_script
+
           execute "running build script on #{directory}" do
             Dir.chdir(directory) { system(build_script) }
-          end if build_script
+          end 
         end
 
         def check!
@@ -87,23 +92,29 @@ module Capistrano
         # use a local cache + copy instead of a new checkout/export every
         # time. Returns +nil+ unless :copy_cache has been set. If :copy_cache
         # is +true+, a default cache location will be returned.
+
         def copy_cache
-          @copy_cache ||= configuration[:copy_cache] == true ?
-            File.expand_path(configuration[:application], Dir.tmpdir) :
-            File.expand_path(configuration[:copy_cache], Dir.pwd) rescue nil
+          @copy_cache ||= if configuration[:copy_cache] == true
+            File.expand_path(configuration[:application], Dir.tmpdir)
+          else
+            File.expand_path(configuration[:copy_cache], Dir.pwd)
+          end
+        rescue StandardError
+          nil
         end
+
 
         private
 
         def run_copy_cache_strategy
           copy_repository_to_local_cache
-          build copy_cache
+          build(copy_cache)
           copy_cache_to_staging_area
         end
 
         def run_copy_strategy
           copy_repository_to_server
-          build destination
+          build(destination)
           remove_excluded_files if copy_exclude.any?
         end
 
@@ -157,9 +168,14 @@ module Capistrano
         end
 
         def filetype(name)
-          filetype = File.ftype name
-          filetype = "file" unless ["link", "directory"].include? filetype
-          filetype
+          filetype = File.ftype(name)
+
+          case filetype
+          when 'link', 'directory'
+            filetype
+          else
+            'file'
+          end
         end
 
         def copy_link(name)
@@ -176,11 +192,11 @@ module Capistrano
         end
 
         def queue_files(directory = nil)
-          Dir.glob(pattern_for(directory), File::FNM_DOTMATCH).reject! { |file| excluded_files_contain? file }
+          Dir.glob(pattern_for(directory), File::FNM_DOTMATCH).reject! { |file| excluded_files_contain?(file) }
         end
 
         def pattern_for(directory)
-          !directory.nil? ? "#{escape_globs(directory)}/*" : "*"
+          (!directory.nil?) ? "#{escape_globs(directory)}/*" : "*"
         end
 
         def escape_globs(path)
@@ -188,7 +204,7 @@ module Capistrano
         end
 
         def excluded_files_contain?(file)
-          copy_exclude.any? { |p| File.fnmatch(p, file) } or [ ".", ".."].include? File.basename(file)
+          copy_exclude.any? { |p| File.fnmatch(p, file) } || ['.', '..'].include?(File.basename(file))
         end
 
         def copy_repository_to_server
@@ -198,7 +214,7 @@ module Capistrano
         end
 
         def copy_repository_via_strategy
-            system(command)
+          system(command)
         end
 
         def remove_excluded_files
@@ -223,13 +239,12 @@ module Capistrano
         end
 
         def rollback_changes
-          FileUtils.rm filename rescue nil
-          FileUtils.rm_rf destination rescue nil
+          FileUtils.rm(filename) rescue nil
+          FileUtils.rm_rf(destination) rescue nil
         end
 
         def copy_repository_to_local_cache
-          return refresh_local_cache if File.exist?(copy_cache)
-          create_local_cache
+          File.exist?(copy_cache) ? refresh_local_cache : create_local_cache
         end
 
         def build_script
@@ -297,8 +312,8 @@ module Capistrano
         def compression
           remote_tar = configuration[:copy_remote_tar] || 'tar'
           local_tar = configuration[:copy_local_tar] || 'tar'
-
           type = configuration[:copy_compression] || :gzip
+
           case type
           when :gzip, :gz   then Compression.new("tar.gz",  [local_tar, 'czf'], [remote_tar, 'xzf'])
           when :bzip2, :bz2 then Compression.new("tar.bz2", [local_tar, 'cjf'], [remote_tar, 'xjf'])

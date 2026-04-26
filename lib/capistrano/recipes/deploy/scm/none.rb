@@ -26,32 +26,29 @@ module Capistrano
       #   set :copy_dereference_symlink, true
 
       class None < Base
+
         # No versioning, thus, no head. Returns the empty string.
         def head
           ""
         end
 
-        # Simply does a copy from the :repository directory to the
-        # :destination directory.
+        # Simply does a copy from the :repository directory to the :destination directory.
         def checkout(revision, destination)
-          "cp -R#{configuration[:copy_dereference_symlink]?'L':''} #{repository} #{destination}"
+          "cp -R#{configuration[:copy_dereference_symlink] ? 'L' : ''} #{repository} #{destination}"
         end
+
         alias_method :export, :checkout
 
-        # No versioning, so this just returns the argument, with no
-        # modification.
+        # No versioning, so this just returns the argument, with no modification.
         def query_revision(revision)
           revision
         end
 
         # log: There's no log, so it just echos from and to.
-
         def log(from = "", to = "")
           "No SCM: #{from} - #{to}"
         end
-
       end
-
     end
   end
 end
