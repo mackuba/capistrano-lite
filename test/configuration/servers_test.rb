@@ -20,12 +20,12 @@ class ConfigurationServersTest < Test::Unit::TestCase
     ENV.delete('HOST')
   end
 
-  def test_active_server_should_return_the_configured_server
-    assert_equal "app1", @config.active_server.host
+  def test_resolved_server_should_return_the_configured_server
+    assert_equal "app1", @config.resolved_server.host
   end
 
   def test_server_should_keep_connection_options
-    server = @config.active_server
+    server = @config.resolved_server
     assert_equal "deploy", server.user
     assert_equal 2222, server.port
     assert_equal({ :forward_agent => true }, server.options[:ssh_options])
@@ -33,7 +33,7 @@ class ConfigurationServersTest < Test::Unit::TestCase
 
   def test_host_environment_variable_should_replace_configured_host
     ENV['HOST'] = "override"
-    server = @config.active_server
+    server = @config.resolved_server
     assert_equal "override", server.host
     assert_equal "deploy", server.user
     assert_equal 2222, server.port
@@ -42,7 +42,7 @@ class ConfigurationServersTest < Test::Unit::TestCase
 
   def test_host_environment_variable_can_include_user_and_port
     ENV['HOST'] = "other@override:2022"
-    server = @config.active_server
+    server = @config.resolved_server
     assert_equal "override", server.host
     assert_equal "other", server.user
     assert_equal 2022, server.port
@@ -50,12 +50,12 @@ class ConfigurationServersTest < Test::Unit::TestCase
 
   def test_host_environment_variable_must_not_be_blank
     ENV['HOST'] = " "
-    assert_raises(ArgumentError) { @config.active_server }
+    assert_raises(ArgumentError) { @config.resolved_server }
   end
 
-  def test_active_server_should_raise_when_no_server_is_configured
+  def test_resolved_server_should_raise_when_no_server_is_configured
     config = MockConfig.new
-    assert_raises(Capistrano::NoMatchingServersError) { config.active_server }
+    assert_raises(Capistrano::NoMatchingServersError) { config.resolved_server }
   end
 
   def test_server_should_reject_multiple_hosts

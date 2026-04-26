@@ -7,6 +7,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     attr_reader :values
     attr_reader :dry_run
     attr_accessor :current_task
+    attr_accessor :server
 
     def initialize
       @original_initialize_called = true
@@ -26,12 +27,8 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
       @values.key?(key)
     end
 
-    def active_server
+    def resolved_server
       @server
-    end
-
-    def active_server=(server)
-      @server = server
     end
 
     include Capistrano::Configuration::Connections
@@ -85,18 +82,18 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     assert_raises(ArgumentError) { @config.execute_on_server }
   end
 
-  def test_execute_on_server_without_current_task_should_use_active_server
+  def test_execute_on_server_without_current_task_should_use_configured_server
     host = server("first")
-    @config.active_server = host
+    @config.server = host
     @config.expects(:establish_connection_to).with(host).returns(:done)
     @config.execute_on_server do |result|
       assert_equal host, result
     end
   end
 
-  def test_execute_on_server_should_determine_server_from_active_server
+  def test_execute_on_server_should_determine_server_from_configured_server
     assert_nil @config.session
-    @config.active_server = server("cap1")
+    @config.server = server("cap1")
     @config.current_task = mock_task
     Capistrano::SSH.expects(:connect).returns(:success)
     @config.execute_on_server {}
@@ -106,7 +103,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_execute_on_server_should_yield_server_to_block
     assert_nil @config.session
     host = server("cap1")
-    @config.active_server = host
+    @config.server = host
     @config.current_task = mock_task
     Capistrano::SSH.expects(:connect).returns(:success)
     block_called = false
@@ -120,7 +117,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
 
   def test_execute_servers_should_raise_connection_error_on_failure_by_default
     @config.current_task = mock_task
-    @config.active_server = server("cap1")
+    @config.server = server("cap1")
     Capistrano::SSH.expects(:connect).raises(Exception)
     assert_raises(Capistrano::ConnectionError) do
       @config.execute_on_server do
@@ -132,7 +129,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_execute_servers_should_not_raise_connection_error_on_failure_with_on_errors_continue
     host = server("cap1")
     @config.current_task = mock_task(:on_error => :continue)
-    @config.active_server = host
+    @config.server = host
     Capistrano::SSH.expects(:connect).raises(Exception)
     assert_nothing_raised {
       @config.execute_on_server do
@@ -144,7 +141,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
 
   def test_execute_on_server_should_skip_failed_host_with_on_errors_continue
     @config.current_task = mock_task(:on_error => :continue)
-    @config.active_server = server("cap1")
+    @config.server = server("cap1")
     @config.instance_variable_set('@failed', true)
 
     Capistrano::SSH.expects(:connect).never
@@ -157,7 +154,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_execute_on_server_should_record_command_errors_with_on_errors_continue
     host = server("cap1")
     @config.current_task = mock_task(:on_error => :continue)
-    @config.active_server = host
+    @config.server = host
     Capistrano::SSH.expects(:connect).returns(:success)
     @config.execute_on_server do
       error = Capistrano::CommandError.new
@@ -170,7 +167,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_connect_should_establish_connection_to_server_in_scope
     assert_nil @config.session
     @config.current_task = mock_task
-    @config.active_server = server("cap1")
+    @config.server = server("cap1")
     Capistrano::SSH.expects(:connect).returns(:success)
     @config.connect!
     assert_equal :success, @config.session

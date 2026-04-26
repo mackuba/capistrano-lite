@@ -27,28 +27,28 @@ module Capistrano
       # is set, it replaces the configured host name while preserving configured
       # connection options such as user, port, and SSH options.
 
-      def active_server
-        raise Capistrano::NoMatchingServersError, "no server configured" unless @server
+      def resolved_server
+        if host = ENV['HOST']
+          host = host.strip
+          raise ArgumentError, "HOST must name a single host" if host.empty? || host.include?(',')
 
-        host = ENV['HOST']
-        raise ArgumentError, "HOST must name a single host" if host && host.strip.empty?
-
-        host ? server_definition_from(host, connection_options_for(@server)) : @server
+          options = @server ? connection_options_for(@server) : {}
+          server_definition_from(host, options)
+        else
+          @server or raise Capistrano::NoMatchingServersError, "no server configured"
+        end
       end
+
 
       protected
 
       def server_definition_from(host, options = {})
-        case host
-        when ServerDefinition
-          host
-        when String
-          host = host.strip
-          raise ArgumentError, "server must name a single host" if host.empty? || host.include?(',')
-          ServerDefinition.new(host, options)
-        else
-          raise ArgumentError, "server must be defined as a host string or ServerDefinition instance"
-        end
+        raise ArgumentError, "server must be defined as a string" unless host.is_a?(String)
+
+        host = host.strip
+        raise ArgumentError, "server value must be a single hostname" if host.empty? || host.include?(',')
+
+        ServerDefinition.new(host, options)
       end
 
       def connection_options_for(server)

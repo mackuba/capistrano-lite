@@ -81,7 +81,6 @@ module Capistrano
             raise ArgumentError, "attempt to execute without specifying a command"
           end
 
-          active_server
           logger.debug "executing #{cmd.inspect}" unless options[:silent]
 
           return if dry_run || (debug && continue_execution(cmd) == false)

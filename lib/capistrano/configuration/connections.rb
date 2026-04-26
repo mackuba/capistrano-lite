@@ -41,9 +41,9 @@ module Capistrano
         raise ArgumentError, "expected a block" unless block_given?
 
         task = current_task
-        server = active_server
         return if task && task.continue_on_error? && @failed
 
+        server = resolved_server
         logger.trace "server: #{server.host.inspect}"
 
         begin
