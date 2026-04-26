@@ -17,7 +17,8 @@ class ConfigurationServersTest < Test::Unit::TestCase
   end
 
   def teardown
-    ENV.delete('HOST')
+    ENV.delete('HOSTS')
+    ENV.delete('SERVER')
   end
 
   def test_resolved_server_should_return_the_configured_server
@@ -31,8 +32,8 @@ class ConfigurationServersTest < Test::Unit::TestCase
     assert_equal({ :forward_agent => true }, server.options[:ssh_options])
   end
 
-  def test_host_environment_variable_should_replace_configured_host
-    ENV['HOST'] = "override"
+  def test_server_environment_variable_should_replace_configured_host
+    ENV['SERVER'] = "override"
     server = @config.resolved_server
     assert_equal "override", server.host
     assert_equal "deploy", server.user
@@ -40,17 +41,42 @@ class ConfigurationServersTest < Test::Unit::TestCase
     assert_equal({ :forward_agent => true }, server.options[:ssh_options])
   end
 
-  def test_host_environment_variable_can_include_user_and_port
-    ENV['HOST'] = "other@override:2022"
+  def test_server_environment_variable_can_include_user_and_port
+    ENV['SERVER'] = "other@override:2022"
     server = @config.resolved_server
     assert_equal "override", server.host
     assert_equal "other", server.user
     assert_equal 2022, server.port
   end
 
-  def test_host_environment_variable_must_not_be_blank
-    ENV['HOST'] = " "
+  def test_server_environment_variable_must_not_be_blank
+    ENV['SERVER'] = " "
     assert_raises(ArgumentError) { @config.resolved_server }
+  end
+
+  def test_hosts_environment_variable_should_replace_configured_host_as_fallback
+    ENV['HOSTS'] = "override"
+    server = @config.resolved_server
+    assert_equal "override", server.host
+    assert_equal "deploy", server.user
+    assert_equal 2222, server.port
+    assert_equal({ :forward_agent => true }, server.options[:ssh_options])
+  end
+
+  def test_server_environment_variable_should_take_precedence_over_hosts
+    ENV['SERVER'] = "override"
+    ENV['HOSTS'] = "fallback"
+    assert_equal "override", @config.resolved_server.host
+  end
+
+  def test_hosts_environment_variable_must_name_a_single_server
+    ENV['HOSTS'] = "app1,app2"
+    assert_raises(ArgumentError) { @config.resolved_server }
+  end
+
+  def test_host_environment_variable_should_not_replace_configured_host
+    ENV['HOST'] = "override"
+    assert_equal "app1", @config.resolved_server.host
   end
 
   def test_resolved_server_should_raise_when_no_server_is_configured

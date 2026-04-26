@@ -192,10 +192,10 @@ namespace :deploy do
     Prepares the server for deployment. Before you can use any \
     of the Capistrano deployment tasks with your project, you will need to \
     make sure your server has been prepared with `cap deploy:setup'. To \
-    temporarily run setup against a different server, specify the HOST \
+    temporarily run setup against a different server, specify the SERVER \
     environment variable:
 
-      $ cap HOST=new.server.com deploy:setup
+      $ cap SERVER=new.server.com deploy:setup
 
     It is safe to run this task on a server that has already been set up; it \
     will not destroy any deployed revisions or data.

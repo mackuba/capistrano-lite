@@ -23,14 +23,14 @@ module Capistrano
         @server = server_definition_from(host, options)
       end
 
-      # Returns the configured server. If the HOST environment variable
+      # Returns the configured server. If the SERVER environment variable
       # is set, it replaces the configured host name while preserving configured
       # connection options such as user, port, and SSH options.
 
       def resolved_server
-        if host = ENV['HOST']
-          host = host.strip
-          raise ArgumentError, "HOST must name a single host" if host.empty? || host.include?(',')
+        if env_key = server_override_env
+          host = ENV[env_key].strip
+          raise ArgumentError, "#{env_key} must name a single server" if host.empty? || host.include?(',')
 
           options = @server ? connection_options_for(@server) : {}
           server_definition_from(host, options)
@@ -41,6 +41,14 @@ module Capistrano
 
 
       protected
+
+      def server_override_env
+        if ENV.key?('SERVER')
+          'SERVER'
+        elsif ENV.key?('HOSTS')
+          'HOSTS'
+        end
+      end
 
       def server_definition_from(host, options = {})
         raise ArgumentError, "server must be defined as a string" unless host.is_a?(String)

@@ -68,5 +68,5 @@ The following options are understood:
 <%= color('Environment Variables', :bold) %>
 -----------------------------
 
-  <%= color 'HOST', :bold %>
-  Execute the tasks against this host instead of the configured server.
+  <%= color 'SERVER', :bold %>
+  Execute the tasks against this server instead of the configured server.
