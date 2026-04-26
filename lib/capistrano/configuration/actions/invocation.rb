@@ -88,7 +88,7 @@ module Capistrano
 
           block = sudo_behavior_callback(block) if cmd.include?(sudo)
 
-          execute_on_server(options) do
+          execute_on_server do
             Command.process(cmd, session, options.merge(:logger => logger, :configuration => self), &block)
           end
         end

@@ -43,7 +43,7 @@ module Capistrano
             return logger.debug "transfering: #{[direction, from, to] * ', '}"
           end
 
-          execute_on_server(options) do
+          execute_on_server do
             Transfer.process(direction, from, to, session, options.merge(:logger => logger), &block)
           end
         end

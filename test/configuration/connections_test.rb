@@ -89,7 +89,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     host = server("first")
     @config.active_server = host
     @config.expects(:establish_connection_to).with(host).returns(:done)
-    @config.execute_on_server(:a => :b, :c => :d) do |result|
+    @config.execute_on_server do |result|
       assert_equal host, result
     end
   end

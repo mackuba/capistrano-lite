@@ -54,7 +54,7 @@ class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
 
   def test_transfer_should_invoke_transfer_on_the_configured_server
     @config.session = 1
-    @config.expects(:execute_on_server).with({ :foo => "bar" }).yields(:a)
+    @config.expects(:execute_on_server).yields(:a)
     Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", 1, {:foo => "bar", :logger => @config.logger})
     @config.transfer(:up, "testl.txt", "testr.txt", :foo => "bar")
   end

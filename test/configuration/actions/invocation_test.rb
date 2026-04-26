@@ -8,6 +8,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     attr_accessor :debug
     attr_accessor :dry_run
     attr_accessor :server
+    attr_accessor :session
 
     def initialize
       @options = {}
@@ -31,7 +32,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
       @server
     end
 
-    def execute_on_server(options = {})
+    def execute_on_server
       yield @server
     end
 
@@ -48,8 +49,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     MockConfig.default_io_proc = @original_io_proc
   end
 
-  def test_run_options_should_be_passed_to_execute_on_server
-    @config.expects(:execute_on_server).with({ :foo => "bar", :eof => true })
+  def test_run_options_should_be_passed_to_command_process
+    ::Capistrano::Command.expects(:process).with("ls", @config.session, has_entries(:foo => "bar", :eof => true, :logger => @config.logger, :configuration => @config))
     @config.run "ls", :foo => "bar"
   end
 
@@ -120,7 +121,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_sudo_should_keep_input_stream_open
-    @config.expects(:execute_on_server).with({ :foo => "bar" })
+    @config.expects(:execute_on_server)
     @config.sudo "ls", :foo => "bar"
   end
 
