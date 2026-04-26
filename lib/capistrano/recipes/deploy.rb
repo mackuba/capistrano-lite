@@ -77,7 +77,7 @@ _cset(:run_method)        { fetch(:use_sudo, true) ? :sudo : :run }
 _cset(:latest_release) { exists?(:deploy_timestamped) ? release_path : current_release }
 
 _cset :maintenance_basename, "maintenance"
-_cset(:maintenance_template_path) { File.join(File.dirname(__FILE__), "templates", "maintenance.rhtml") }
+_cset(:maintenance_template_path) { File.join(__dir__, "templates", "maintenance.rhtml") }
 
 # =========================================================================
 # These are helper methods that will be available to your recipes.

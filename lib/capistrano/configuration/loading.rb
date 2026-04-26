@@ -51,7 +51,7 @@ module Capistrano
       attr_reader :load_paths
 
       def initialize_loading #:nodoc:
-        @load_paths = ['.', File.expand_path(File.join(File.dirname(__FILE__), '../recipes'))]
+        @load_paths = ['.', File.expand_path("../recipes", __dir__)]
         @loaded_features = []
       end
 

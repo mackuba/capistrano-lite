@@ -149,9 +149,23 @@ class CLIHelpTest < Test::Unit::TestCase
     @cli.explain_task(config, "deploy_with_niftiness")
   end
 
+  def test_format_text_should_wrap_lines_and_preserve_indentation
+    @ui.stubs(:output_cols).returns(45)
+    text = "    alpha beta gamma delta epsilon zeta eta theta\n\n" \
+      "\talpha beta gamma delta epsilon zeta eta theta\n"
+
+    assert_equal \
+      "    alpha beta gamma delta epsilon zeta eta\n" \
+      "    theta\n" \
+      "\n" \
+      "\talpha beta gamma delta epsilon zeta\n" \
+      "\teta theta\n",
+      @cli.format_text(text)
+  end
+
   def test_long_help_should_load_and_format_help_txt_file
-    File.expects(:dirname).returns "a/b/c"
-    File.expects(:read).with("a/b/c/help.txt").returns("text")
+    help_file = File.expand_path("../../lib/capistrano/cli/help.txt", __dir__)
+    File.expects(:read).with(help_file).returns("text")
     @ui.expects(:say).with("text\n")
     @cli.long_help
   end

@@ -90,7 +90,7 @@ module Capistrano
       end
 
       def long_help #:nodoc:
-        help_text = File.read(File.join(File.dirname(__FILE__), "help.txt"))
+        help_text = File.read(File.join(__dir__, "help.txt"))
         self.class.ui.page_at = self.class.ui.output_rows - 2
         self.class.ui.say format_text(help_text)
       end
@@ -100,10 +100,12 @@ module Capistrano
 
         text.each_line do |line|
           indentation = line[/^\s+/] || ""
-          indentation_size = indentation.split(//).inject(0) { |c,s| c + (s[0] == ?\t ? 8 : 1) }
+          indentation_size = indentation.split(//).map { |ch| ch == "\t" ? 8 : 1 }.sum
           line_length = output_columns - indentation_size
           line_length = MIN_MAX_LEN if line_length < MIN_MAX_LEN
+
           lines = line.strip.gsub(/(.{1,#{line_length}})(?:\s+|\Z)/, "\\1\n").split(/\n/)
+
           if lines.empty?
             formatted << "\n"
           else
