@@ -18,7 +18,7 @@ Capistrano Lite is a tool for deploying Ruby applications to a server, based on 
 * Windows support
 * REPL shell
 * legacy SCMs – only `:git` and `:none` are left
-* most deploy strategies – only `:copy` and `:remote_cache` are left
+* most deploy strategies – only `:remote_cache` and `:copy` are left
 * any legacy/deprecated code from Capistrano 1.x era or for ancient versions of Ruby
 
 
@@ -26,6 +26,7 @@ Capistrano Lite is a tool for deploying Ruby applications to a server, based on 
 
 * default deploy path is `/var/www/#{application}`
 * `server` method in the DSL only accepts a single string + options
+* Ruby 3.0+ is required
 
 
 ### Project status
