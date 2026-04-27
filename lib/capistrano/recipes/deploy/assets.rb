@@ -176,21 +176,12 @@ namespace :deploy do
     DESC
     task :rollback do
       previous_manifest = capture("ls #{previous_release.shellescape}/assets_manifest.*").strip
+
       if capture("[ -e #{previous_manifest.shellescape} ] && echo true || echo false").strip != 'true'
         puts "#{previous_manifest} is missing! Cannot roll back assets. " <<
              "Please run deploy:assets:precompile to update your assets when the rollback is finished."
       else
-        # If the user is rolling back a Rails 4 app to Rails 3
-        if File.extname(previous_manifest) == '.yml' && File.extname(shared_manifest_path) == '.json'
-          # Remove the existing JSON manifest
-          run "rm -f -- #{shared_manifest_path.shellescape}"
-
-          # Restore the manifest to the Rails 3 path
-          restored_manifest_path = "#{shared_path.shellescape}/#{shared_assets_prefix}/manifest.yml"
-        else
-          # If the user is not rolling back from Rails 4 to 3, we just want to replace the current manifest
-          restored_manifest_path = shared_manifest_path
-        end
+        restored_manifest_path = shared_manifest_path
 
         run <<-CMD.compact
           cd -- #{previous_release.shellescape} &&
