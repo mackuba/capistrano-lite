@@ -35,6 +35,8 @@ _cset(:revision)  { source.head }
 _cset :rails_env, "production"
 _cset :rake, "rake"
 
+_cset :keep_releases, 5
+
 # =========================================================================
 # These variables should NOT be changed unless you are very confident in
 # what you are doing. Make sure you understand all the implications of your
@@ -186,6 +188,7 @@ namespace :deploy do
   task :default do
     update
     restart
+    cleanup
   end
 
   desc <<-DESC
@@ -449,6 +452,7 @@ namespace :deploy do
     migrate
     create_symlink
     restart
+    cleanup
   end
 
   desc <<-DESC
@@ -460,8 +464,9 @@ namespace :deploy do
   DESC
 
   task :cleanup do
-    count = fetch(:keep_releases, 5).to_i
-    try_sudo "ls -1dt #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
+    if (count = fetch(:keep_releases)) && count != :all
+      try_sudo "ls -1dt #{releases_path}/* | tail -n +#{count.to_i + 1} | #{try_sudo} xargs rm -rf"
+    end
   end
 
   desc <<-DESC
