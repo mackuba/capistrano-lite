@@ -112,7 +112,7 @@ module Capistrano
         end
       rescue Capistrano::CommandError => e
         @success = false
-        @hosts = e.hosts.join(', ')
+        @hosts = e.host.to_s
       end
     end
   end

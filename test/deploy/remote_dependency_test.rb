@@ -123,7 +123,7 @@ class RemoteDependencyTest < Test::Unit::TestCase
       expectation.returns(true)
     else
       error = Capistrano::CommandError.new
-      error.expects(:hosts).returns(["host"])
+      error.expects(:host).returns("host")
       expectation.raises(error)
     end
   end

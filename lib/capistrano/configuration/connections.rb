@@ -19,23 +19,26 @@ module Capistrano
       # time-sensitive.
 
       def connect!
-        execute_on_server { }
+        establish_connection_to_server
       end
 
       # Ensures that there is an active session for the server.
 
-      def establish_connection_to(server)
-        begin
-          self.session ||= SSH.connect(server, self)
-        rescue Exception => err
-          error = ConnectionError.new("connection failed for: #{server} (#{err.class}: #{err.message})")
-          error.hosts = [server]
-          raise error
-        end
+      def establish_connection_to_server
+        return if @session
+
+        server = resolved_server
+        @session = SSH.connect(server, self)
+      rescue Exception => err
+        raise err unless server
+
+        error = ConnectionError.new("connection failed for: #{server} (#{err.class}: #{err.message})")
+        error.host = server
+        raise error
       end
 
       # Determines the configured server, establishes a connection to it, and
-      # yields the server to the command and transfer layers.
+      # yields to the command and transfer layers.
 
       def execute_on_server
         raise ArgumentError, "expected a block" unless block_given?
@@ -43,10 +46,8 @@ module Capistrano
         task = current_task
         return if task && task.continue_on_error? && @failed
 
-        server = resolved_server
-
         begin
-          establish_connection_to(server)
+          establish_connection_to_server
         rescue ConnectionError => error
           raise error unless task && task.continue_on_error?
           @failed = true
@@ -54,7 +55,7 @@ module Capistrano
         end
 
         begin
-          yield server
+          yield
         rescue RemoteError => error
           raise error unless task && task.continue_on_error?
           @failed = true

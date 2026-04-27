@@ -49,7 +49,7 @@ module Capistrano
         server = transfer[:server]
         transfer_error = transfer[:error]
         error = TransferError.new("#{operation} via #{transport} failed on #{server}: #{transfer_error} (#{transfer_error.message})")
-        error.hosts = [server]
+        error.host = server
 
         logger.important(error.message) if logger
         raise error

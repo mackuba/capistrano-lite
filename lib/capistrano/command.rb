@@ -52,7 +52,7 @@ module Capistrano
       if channel[:status] != 0
         message = "#{channel[:command].inspect} on #{channel[:server]}"
         error = CommandError.new("failed: #{message}")
-        error.hosts = [channel[:server]]
+        error.host = channel[:server]
         raise error
       end
 

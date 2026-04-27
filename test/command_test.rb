@@ -199,15 +199,15 @@ class CommandTest < Test::Unit::TestCase
     assert_raises(Capistrano::CommandError) { cmd.process! }
   end
 
-  def test_command_error_should_include_accessor_with_host_array
+  def test_command_error_should_include_accessor_with_host
     cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 1)))
 
     begin
       cmd.process!
       flunk "expected an exception to be raised"
     rescue Capistrano::CommandError => e
-      assert e.respond_to?(:hosts)
-      assert_equal %w(capistrano), e.hosts.map { |h| h.to_s }
+      assert e.respond_to?(:host)
+      assert_equal "capistrano", e.host.to_s
     end
   end
 

@@ -33,7 +33,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     end
 
     def execute_on_server
-      yield @server
+      yield
     end
 
     include Capistrano::Configuration::Actions::Invocation

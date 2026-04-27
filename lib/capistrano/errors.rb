@@ -6,7 +6,7 @@ module Capistrano
   NoMatchingServersError  = Class.new(Capistrano::Error)
 
   class RemoteError < Error
-    attr_accessor :hosts
+    attr_accessor :host
   end
 
   ConnectionError     = Class.new(Capistrano::RemoteError)

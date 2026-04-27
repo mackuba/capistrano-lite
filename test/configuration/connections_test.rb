@@ -46,35 +46,40 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     assert_false @config.instance_variable_get('@failed')
   end
 
-  def test_establish_connection_to_should_accept_a_single_server
+  def test_establish_connection_to_server_should_use_the_resolved_server
     Capistrano::SSH.expects(:connect).with { |s,c| s.host == "capistrano" && c == @config }.returns(:success)
     assert_nil @config.session
-    @config.establish_connection_to(server("capistrano"))
+    @config.server = server("capistrano")
+    @config.establish_connection_to_server
     assert_equal :success, @config.session
   end
 
-  def test_establish_connection_to_should_not_attempt_to_reestablish_existing_connection
+  def test_establish_connection_to_server_should_not_attempt_to_reestablish_existing_connection
     Capistrano::SSH.expects(:connect).never
+    @config.expects(:resolved_server).never
     @config.session = :ok
-    @config.establish_connection_to(server("cap1"))
+    @config.server = server("cap1")
+    @config.establish_connection_to_server
     assert_equal :ok, @config.session
   end
 
-  def test_establish_connection_to_should_raise_connection_error_on_failure
+  def test_establish_connection_to_server_should_raise_connection_error_on_failure
     Capistrano::SSH.expects(:connect).raises(Exception)
+    @config.server = server("cap1")
     assert_raises(Capistrano::ConnectionError) {
-      @config.establish_connection_to(server("cap1"))
+      @config.establish_connection_to_server
     }
   end
 
   def test_connection_error_should_include_failed_host
     Capistrano::SSH.expects(:connect).raises(Exception)
+    @config.server = server("cap1")
     begin
-      @config.establish_connection_to(server("cap1"))
+      @config.establish_connection_to_server
       flunk "expected an exception to be raised"
     rescue Capistrano::ConnectionError => e
-      assert e.respond_to?(:hosts)
-      assert_equal %w(cap1), e.hosts.map { |h| h.to_s }
+      assert e.respond_to?(:host)
+      assert_equal "cap1", e.host.to_s
     end
   end
 
@@ -85,10 +90,12 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_execute_on_server_without_current_task_should_use_configured_server
     host = server("first")
     @config.server = host
-    @config.expects(:establish_connection_to).with(host).returns(:done)
-    @config.execute_on_server do |result|
-      assert_equal host, result
+    @config.expects(:establish_connection_to_server).returns(:done)
+    block_called = false
+    @config.execute_on_server do
+      block_called = true
     end
+    assert block_called
   end
 
   def test_execute_on_server_should_determine_server_from_configured_server
@@ -100,16 +107,15 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     assert_equal :success, @config.session
   end
 
-  def test_execute_on_server_should_yield_server_to_block
+  def test_execute_on_server_should_yield_to_block
     assert_nil @config.session
     host = server("cap1")
     @config.server = host
     @config.current_task = mock_task
     Capistrano::SSH.expects(:connect).returns(:success)
     block_called = false
-    @config.execute_on_server do |server|
+    @config.execute_on_server do
       block_called = true
-      assert_equal host, server
       assert @config.session
     end
     assert block_called
@@ -158,7 +164,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     Capistrano::SSH.expects(:connect).returns(:success)
     @config.execute_on_server do
       error = Capistrano::CommandError.new
-      error.hosts = [host]
+      error.host = host
       raise error
     end
     assert @config.instance_variable_get('@failed')
