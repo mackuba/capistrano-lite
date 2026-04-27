@@ -44,7 +44,6 @@ module Capistrano
         return if task && task.continue_on_error? && @failed
 
         server = resolved_server
-        logger.trace "server: #{server.host.inspect}"
 
         begin
           establish_connection_to(server)
