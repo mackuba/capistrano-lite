@@ -1,8 +1,8 @@
 require "utils"
-require 'capistrano/recipes/deploy/scm/base'
+require 'minestrone/recipes/deploy/scm/base'
 
 class DeploySCMBaseTest < Test::Unit::TestCase
-  class TestSCM < Capistrano::Deploy::SCM::Base
+  class TestSCM < Minestrone::Deploy::SCM::Base
     default_command "floopy"
   end
 

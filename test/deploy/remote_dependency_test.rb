@@ -1,10 +1,10 @@
 require "utils"
-require 'capistrano/recipes/deploy/remote_dependency'
+require 'minestrone/recipes/deploy/remote_dependency'
 
 class RemoteDependencyTest < Test::Unit::TestCase
   def setup
     @config = { }
-    @dependency = Capistrano::Deploy::RemoteDependency.new(@config)
+    @dependency = Minestrone::Deploy::RemoteDependency.new(@config)
   end
 
   def test_should_use_standard_error_message_for_directory
@@ -32,9 +32,9 @@ class RemoteDependencyTest < Test::Unit::TestCase
   end
 
   def test_should_use_standard_error_message_for_gem
-    setup_for_a_configuration_gem_run("capistrano", "9.9", false)
-    @dependency.gem("capistrano", 9.9)
-    assert_equal "gem `capistrano' 9.9 could not be found (host)", @dependency.message
+    setup_for_a_configuration_gem_run("minestrone", "9.9", false)
+    @dependency.gem("minestrone", 9.9)
+    assert_equal "gem `minestrone' 9.9 could not be found (host)", @dependency.message
   end
 
   def test_should_use_standard_error_message_for_deb
@@ -90,13 +90,13 @@ class RemoteDependencyTest < Test::Unit::TestCase
   end
 
   def test_should_fail_if_gem_not_found
-    setup_for_a_configuration_gem_run("capistrano", "9.9", false)
-    assert !@dependency.gem("capistrano", 9.9).pass?
+    setup_for_a_configuration_gem_run("minestrone", "9.9", false)
+    assert !@dependency.gem("minestrone", 9.9).pass?
   end
 
   def test_should_pass_if_gem_found
-    setup_for_a_configuration_gem_run("capistrano", "9.9", true)
-    assert @dependency.gem("capistrano", 9.9).pass?
+    setup_for_a_configuration_gem_run("minestrone", "9.9", true)
+    assert @dependency.gem("minestrone", 9.9).pass?
   end
 
   def test_should_pass_if_deb_found
@@ -122,7 +122,7 @@ class RemoteDependencyTest < Test::Unit::TestCase
     if passing
       expectation.returns(true)
     else
-      error = Capistrano::CommandError.new
+      error = Minestrone::CommandError.new
       error.expects(:host).returns("host")
       expectation.raises(error)
     end

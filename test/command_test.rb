@@ -1,6 +1,6 @@
 require "utils"
-require 'capistrano/command'
-require 'capistrano/configuration'
+require 'minestrone/command'
+require 'minestrone/configuration'
 
 class CommandTest < Test::Unit::TestCase
   class FakeChannel < Hash
@@ -17,16 +17,16 @@ class CommandTest < Test::Unit::TestCase
 
   def test_command_should_keep_session
     session = mock_session
-    assert_equal session, Capistrano::Command.new("ls", session).session
+    assert_equal session, Minestrone::Command.new("ls", session).session
   end
 
   def test_command_with_newlines_should_be_properly_escaped
-    cmd = Capistrano::Command.new("ls\necho", mock_session)
+    cmd = Minestrone::Command.new("ls\necho", mock_session)
     assert_equal "ls\\\necho", cmd.command
   end
 
   def test_command_with_crlf_newlines_should_be_properly_escaped
-    cmd = Capistrano::Command.new("ls\r\necho", mock_session)
+    cmd = Minestrone::Command.new("ls\r\necho", mock_session)
     assert_equal "ls\\\necho", cmd.command
   end
 
@@ -90,7 +90,7 @@ class CommandTest < Test::Unit::TestCase
     channel = nil
     session = setup_for_extracting_channel_action { |ch| channel = ch }
     open_test_channel("ls", session)
-    assert_equal "capistrano", channel[:host]
+    assert_equal "minestrone", channel[:host]
   end
 
   def test_open_channel_should_set_options_key_on_channel
@@ -171,7 +171,7 @@ class CommandTest < Test::Unit::TestCase
     logger = stub_everything
 
     session = setup_for_extracting_channel_action([:on_request, "exit-signal"], data)
-    logger.expects(:important).with("command received signal TERM", server("capistrano"))
+    logger.expects(:important).with("command received signal TERM", server("minestrone"))
 
     open_test_channel("puppet", session, :logger => logger)
   end
@@ -184,30 +184,30 @@ class CommandTest < Test::Unit::TestCase
   end
 
   def test_stop_should_close_open_channel
-    cmd = Capistrano::Command.new("ls", mock_session)
+    cmd = Minestrone::Command.new("ls", mock_session)
     cmd.send(:open_channel, mock_session(new_channel(false)))
     cmd.stop!
   end
 
   def test_process_should_return_cleanly_if_channel_has_zero_exit_status
-    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 0)))
+    cmd = Minestrone::Command.new("ls", mock_session(new_channel(true, 0)))
     assert_nothing_raised { cmd.process! }
   end
 
   def test_process_should_raise_error_if_channel_has_non_zero_exit_status
-    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 1)))
-    assert_raises(Capistrano::CommandError) { cmd.process! }
+    cmd = Minestrone::Command.new("ls", mock_session(new_channel(true, 1)))
+    assert_raises(Minestrone::CommandError) { cmd.process! }
   end
 
   def test_command_error_should_include_accessor_with_host
-    cmd = Capistrano::Command.new("ls", mock_session(new_channel(true, 1)))
+    cmd = Minestrone::Command.new("ls", mock_session(new_channel(true, 1)))
 
     begin
       cmd.process!
       flunk "expected an exception to be raised"
-    rescue Capistrano::CommandError => e
+    rescue Minestrone::CommandError => e
       assert e.respond_to?(:host)
-      assert_equal "capistrano", e.host.to_s
+      assert_equal "minestrone", e.host.to_s
     end
   end
 
@@ -216,7 +216,7 @@ class CommandTest < Test::Unit::TestCase
     ch.stubs(:to_ary)
     ch.stubs(:[]).with(:closed).returns(false, false, false, true)
     ch.expects(:[]).with(:status).returns(0)
-    cmd = Capistrano::Command.new("ls", mock_session(ch))
+    cmd = Minestrone::Command.new("ls", mock_session(ch))
     assert_nothing_raised do
       cmd.process!
     end
@@ -225,13 +225,13 @@ class CommandTest < Test::Unit::TestCase
   def test_process_should_instantiate_command_and_process!
     cmd = mock("command", :process! => nil)
     session = mock_session
-    Capistrano::Command.expects(:new).with("ls -l", session, {:foo => "bar"}).returns(cmd)
-    Capistrano::Command.process("ls -l", session, :foo => "bar")
+    Minestrone::Command.expects(:new).with("ls -l", session, {:foo => "bar"}).returns(cmd)
+    Minestrone::Command.process("ls -l", session, :foo => "bar")
   end
 
   def test_process_with_host_placeholder_should_substitute_host_placeholder_with_each_host
     session = setup_for_extracting_channel_action do |ch|
-      ch.expects(:exec).with(%(sh -c 'echo capistrano'))
+      ch.expects(:exec).with(%(sh -c 'echo minestrone'))
     end
     open_test_channel("echo $CAPISTRANO:HOST$", session)
   end
@@ -259,7 +259,7 @@ class CommandTest < Test::Unit::TestCase
          :preprocess   => true,
          :postprocess  => true,
          :listeners    => {},
-         :xserver      => server("capistrano"))
+         :xserver      => server("minestrone"))
   end
 
   class MockChannel < Hash
@@ -269,14 +269,14 @@ class CommandTest < Test::Unit::TestCase
 
   def new_channel(closed, status = nil)
     ch = MockChannel.new
-    ch.update({ :closed => closed, :host => "capistrano", :server => server("capistrano") })
+    ch.update({ :closed => closed, :host => "minestrone", :server => server("minestrone") })
     ch[:status] = status if status
     ch.expects(:close) unless closed
     ch
   end
 
   def setup_for_extracting_channel_action(action = nil, *args)
-    s = server("capistrano")
+    s = server("minestrone")
     session = mock("session", :xserver => s)
 
     channel = FakeChannel.new
@@ -298,7 +298,7 @@ class CommandTest < Test::Unit::TestCase
   end
 
   def open_test_channel(command, session, options = {}, &block)
-    cmd = Capistrano::Command.new(command, session, options, &block)
+    cmd = Minestrone::Command.new(command, session, options, &block)
     cmd.send(:open_channel, session)
     cmd
   end

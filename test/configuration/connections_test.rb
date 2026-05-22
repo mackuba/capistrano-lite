@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/configuration/connections'
+require 'minestrone/configuration/connections'
 
 class ConfigurationConnectionsTest < Test::Unit::TestCase
   class MockConfig
@@ -31,7 +31,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
       @server
     end
 
-    include Capistrano::Configuration::Connections
+    include Minestrone::Configuration::Connections
   end
 
   def setup
@@ -47,15 +47,15 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   end
 
   def test_establish_connection_to_server_should_use_the_resolved_server
-    Capistrano::SSH.expects(:connect).with { |s,c| s.host == "capistrano" && c == @config }.returns(:success)
+    Minestrone::SSH.expects(:connect).with { |s,c| s.host == "minestrone" && c == @config }.returns(:success)
     assert_nil @config.session
-    @config.server = server("capistrano")
+    @config.server = server("minestrone")
     @config.establish_connection_to_server
     assert_equal :success, @config.session
   end
 
   def test_establish_connection_to_server_should_not_attempt_to_reestablish_existing_connection
-    Capistrano::SSH.expects(:connect).never
+    Minestrone::SSH.expects(:connect).never
     @config.expects(:resolved_server).never
     @config.session = :ok
     @config.server = server("cap1")
@@ -64,20 +64,20 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   end
 
   def test_establish_connection_to_server_should_raise_connection_error_on_failure
-    Capistrano::SSH.expects(:connect).raises(Exception)
+    Minestrone::SSH.expects(:connect).raises(Exception)
     @config.server = server("cap1")
-    assert_raises(Capistrano::ConnectionError) {
+    assert_raises(Minestrone::ConnectionError) {
       @config.establish_connection_to_server
     }
   end
 
   def test_connection_error_should_include_failed_host
-    Capistrano::SSH.expects(:connect).raises(Exception)
+    Minestrone::SSH.expects(:connect).raises(Exception)
     @config.server = server("cap1")
     begin
       @config.establish_connection_to_server
       flunk "expected an exception to be raised"
-    rescue Capistrano::ConnectionError => e
+    rescue Minestrone::ConnectionError => e
       assert e.respond_to?(:host)
       assert_equal "cap1", e.host.to_s
     end
@@ -102,7 +102,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     assert_nil @config.session
     @config.server = server("cap1")
     @config.current_task = mock_task
-    Capistrano::SSH.expects(:connect).returns(:success)
+    Minestrone::SSH.expects(:connect).returns(:success)
     @config.execute_on_server {}
     assert_equal :success, @config.session
   end
@@ -112,7 +112,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     host = server("cap1")
     @config.server = host
     @config.current_task = mock_task
-    Capistrano::SSH.expects(:connect).returns(:success)
+    Minestrone::SSH.expects(:connect).returns(:success)
     block_called = false
     @config.execute_on_server do
       block_called = true
@@ -124,8 +124,8 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
   def test_execute_servers_should_raise_connection_error_on_failure_by_default
     @config.current_task = mock_task
     @config.server = server("cap1")
-    Capistrano::SSH.expects(:connect).raises(Exception)
-    assert_raises(Capistrano::ConnectionError) do
+    Minestrone::SSH.expects(:connect).raises(Exception)
+    assert_raises(Minestrone::ConnectionError) do
       @config.execute_on_server do
         flunk "expected an exception to be raised"
       end
@@ -136,7 +136,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     host = server("cap1")
     @config.current_task = mock_task(:on_error => :continue)
     @config.server = host
-    Capistrano::SSH.expects(:connect).raises(Exception)
+    Minestrone::SSH.expects(:connect).raises(Exception)
     assert_nothing_raised {
       @config.execute_on_server do
         flunk "should not yield after connection failure"
@@ -150,7 +150,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     @config.server = server("cap1")
     @config.instance_variable_set('@failed', true)
 
-    Capistrano::SSH.expects(:connect).never
+    Minestrone::SSH.expects(:connect).never
 
     @config.execute_on_server do
       flunk "should not yield for failed host"
@@ -161,9 +161,9 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     host = server("cap1")
     @config.current_task = mock_task(:on_error => :continue)
     @config.server = host
-    Capistrano::SSH.expects(:connect).returns(:success)
+    Minestrone::SSH.expects(:connect).returns(:success)
     @config.execute_on_server do
-      error = Capistrano::CommandError.new
+      error = Minestrone::CommandError.new
       error.host = host
       raise error
     end
@@ -174,7 +174,7 @@ class ConfigurationConnectionsTest < Test::Unit::TestCase
     assert_nil @config.session
     @config.current_task = mock_task
     @config.server = server("cap1")
-    Capistrano::SSH.expects(:connect).returns(:success)
+    Minestrone::SSH.expects(:connect).returns(:success)
     @config.connect!
     assert_equal :success, @config.session
   end

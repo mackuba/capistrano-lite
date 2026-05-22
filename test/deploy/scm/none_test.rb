@@ -1,8 +1,8 @@
 require 'utils'
-require 'capistrano/recipes/deploy/scm/none'
+require 'minestrone/recipes/deploy/scm/none'
 
 class DeploySCMNoneTest < Test::Unit::TestCase
-  class TestSCM < Capistrano::Deploy::SCM::None
+  class TestSCM < Minestrone::Deploy::SCM::None
     default_command 'none'
   end
 

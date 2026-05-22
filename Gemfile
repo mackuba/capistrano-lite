@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-# Specify your gem's dependencies in capistrano.gemspec
+# Specify your gem's dependencies in minestrone.gemspec
 gemspec
 
 group :development do

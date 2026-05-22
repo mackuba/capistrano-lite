@@ -1,4 +1,4 @@
-server "www.capistrano.test"
+server "www.minestrone.test"
 
 task :testing do
   set :testing_occurred, true

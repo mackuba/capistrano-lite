@@ -1,31 +1,31 @@
 require 'utils'
-require 'capistrano/transfer'
+require 'minestrone/transfer'
 
 class TransferTest < Test::Unit::TestCase
   def test_class_process_should_delegate_to_instance_process
     s = session('app1')
-    Capistrano::Transfer.expects(:new).with(:up, "from", "to", s, {}).returns(mock('transfer', :process! => nil)).yields
+    Minestrone::Transfer.expects(:new).with(:up, "from", "to", s, {}).returns(mock('transfer', :process! => nil)).yields
     yielded = false
-    Capistrano::Transfer.process(:up, "from", "to", s, {}) { yielded = true }
+    Minestrone::Transfer.process(:up, "from", "to", s, {}) { yielded = true }
     assert yielded
   end
 
   def test_default_transport_is_sftp
-    transfer = Capistrano::Transfer.new(:up, "from", "to", session('app1', :sftp))
+    transfer = Minestrone::Transfer.new(:up, "from", "to", session('app1', :sftp))
     assert_equal :sftp, transfer.transport
   end
 
   def test_active_is_true_when_sftp_transfer_is_active
     s = session('app1', :sftp)
     s.xsftp.expects(:upload).returns(stub('operation', :active? => true))
-    transfer = Capistrano::Transfer.new(:up, "from", "to", s, :via => :sftp)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", s, :via => :sftp)
     assert_equal true, transfer.active?
   end
 
   def test_active_is_false_when_sftp_transfer_is_not_active
     s = session('app1', :sftp)
     s.xsftp.expects(:upload).returns(stub('operation', :active? => false))
-    transfer = Capistrano::Transfer.new(:up, "from", "to", s, :via => :sftp)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", s, :via => :sftp)
     assert_equal false, transfer.active?
   end
 
@@ -33,7 +33,7 @@ class TransferTest < Test::Unit::TestCase
     s = session('app1', :scp)
     channel = stub('channel', :[]= => nil, :active? => true)
     s.scp.expects(:upload).returns(channel)
-    transfer = Capistrano::Transfer.new(:up, "from", "to", s, :via => :scp)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", s, :via => :scp)
     assert_equal true, transfer.active?
   end
 
@@ -41,7 +41,7 @@ class TransferTest < Test::Unit::TestCase
     s = session('app1', :scp)
     channel = stub('channel', :[]= => nil, :active? => false)
     s.scp.expects(:upload).returns(channel)
-    transfer = Capistrano::Transfer.new(:up, "from", "to", s, :via => :scp)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", s, :via => :scp)
     assert_equal false, transfer.active?
   end
 
@@ -52,7 +52,7 @@ class TransferTest < Test::Unit::TestCase
       s.xsftp.expects("#{direction}load".to_sym).with("from-#{s.xserver.host}", "to-#{s.xserver.host}",
         { :properties => { :server => s.xserver, :host => s.xserver.host } })
 
-      transfer = Capistrano::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s)
+      transfer = Minestrone::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s)
     end
 
     define_method("test_scp_#{direction}load_from_file_to_file_should_normalize_from_and_to") do
@@ -60,7 +60,7 @@ class TransferTest < Test::Unit::TestCase
 
       s.scp.expects("#{direction}load".to_sym).returns({}).with("from-#{s.xserver.host}", "to-#{s.xserver.host}", { :via => :scp })
 
-      transfer = Capistrano::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s, :via => :scp)
+      transfer = Minestrone::Transfer.new(direction, "from-$CAPISTRANO:HOST$", "to-$CAPISTRANO:HOST$", s, :via => :scp)
     end
   end
 
@@ -75,7 +75,7 @@ class TransferTest < Test::Unit::TestCase
       opts[:properties][:host] == s.xserver.host
     end
 
-    transfer = Capistrano::Transfer.new(:up, StringIO.new("from here"), "/to/here-$CAPISTRANO:HOST$", s)
+    transfer = Minestrone::Transfer.new(:up, StringIO.new("from here"), "/to/here-$CAPISTRANO:HOST$", s)
   end
 
   def test_scp_upload_from_IO_to_file_should_clone_the_IO_for_the_connection
@@ -90,11 +90,11 @@ class TransferTest < Test::Unit::TestCase
       to == "/to/here-#{s.xserver.host}"
     end
 
-    transfer = Capistrano::Transfer.new(:up, StringIO.new("from here"), "/to/here-$CAPISTRANO:HOST$", s, :via => :scp)
+    transfer = Minestrone::Transfer.new(:up, StringIO.new("from here"), "/to/here-$CAPISTRANO:HOST$", s, :via => :scp)
   end
 
   def test_process_should_block_until_transfer_is_no_longer_active
-    transfer = Capistrano::Transfer.new(:up, "from", "to", session('app1', :sftp))
+    transfer = Minestrone::Transfer.new(:up, "from", "to", session('app1', :sftp))
     transfer.expects(:process_iteration).times(4).yields.returns(true,true,true,false)
     transfer.expects(:active?).times(4)
     transfer.process!
@@ -103,7 +103,7 @@ class TransferTest < Test::Unit::TestCase
   def test_errors_raised_for_a_sftp_session_should_abort_transfer
     s = session('app1')
     error = ExceptionWithSession.new(s)
-    transfer = Capistrano::Transfer.new(:up, "from", "to", session('app1', :sftp))
+    transfer = Minestrone::Transfer.new(:up, "from", "to", session('app1', :sftp))
     transfer.expects(:process_iteration).raises(error).times(3).returns(true, false)
     txfr = mock('transfer', :abort! => true)
     txfr.expects(:[]=).with(:failed, true)
@@ -112,13 +112,13 @@ class TransferTest < Test::Unit::TestCase
     txfr.stubs(:[]).with(:server).returns(s.xserver)
     txfr.stubs(:[]).with(:error).returns(error)
     transfer.expects(:transfer).returns(txfr).at_least_once
-    assert_raises(Capistrano::TransferError) { transfer.process! }
+    assert_raises(Minestrone::TransferError) { transfer.process! }
   end
 
   def test_errors_raised_for_a_scp_session_should_abort_transfer
     s = session('app1')
     error = ExceptionWithSession.new(s)
-    transfer = Capistrano::Transfer.new(:up, "from", "to", session('app1', :scp), :via => :scp)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", session('app1', :scp), :via => :scp)
     transfer.expects(:process_iteration).raises(error).times(3).returns(true, false)
     txfr = mock('channel', :close => true)
     txfr.expects(:[]=).with(:failed, true)
@@ -127,13 +127,13 @@ class TransferTest < Test::Unit::TestCase
     txfr.stubs(:[]).with(:server).returns(s.xserver)
     txfr.stubs(:[]).with(:error).returns(error)
     transfer.expects(:transfer).returns(txfr).at_least_once
-    assert_raises(Capistrano::TransferError) { transfer.process! }
+    assert_raises(Minestrone::TransferError) { transfer.process! }
   end
 
   def test_uploading_a_non_existing_file_should_raise_an_understandable_error
     s = session('app1')
-    error = Capistrano::Processable::SessionAssociation.on(ArgumentError.new('expected a file to upload'), s)
-    transfer = Capistrano::Transfer.new(:up, "from", "to", session('app1', :scp), :via => :scp)
+    error = Minestrone::Processable::SessionAssociation.on(ArgumentError.new('expected a file to upload'), s)
+    transfer = Minestrone::Transfer.new(:up, "from", "to", session('app1', :scp), :via => :scp)
     transfer.expects(:process_iteration).raises(error)
     assert_raise(ArgumentError, 'expected a file to upload') { transfer.process! }
   end

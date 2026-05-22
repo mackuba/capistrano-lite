@@ -1,6 +1,6 @@
 require "utils"
-require 'capistrano/logger'
-require 'capistrano/recipes/deploy/strategy/copy'
+require 'minestrone/logger'
+require 'minestrone/recipes/deploy/strategy/copy'
 require 'stringio'
 
 class DeployStrategyCopyTest < Test::Unit::TestCase
@@ -13,7 +13,7 @@ class DeployStrategyCopyTest < Test::Unit::TestCase
 
     @source = mock("source")
     @config.stubs(:source).returns(@source)
-    @strategy = Capistrano::Deploy::Strategy::Copy.new(@config)
+    @strategy = Minestrone::Deploy::Strategy::Copy.new(@config)
   end
 
   def test_deploy_with_defaults_should_use_remote_gtar

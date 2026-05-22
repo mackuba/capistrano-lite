@@ -1,9 +1,9 @@
 require "utils"
-require 'capistrano/configuration/actions/inspect'
+require 'minestrone/configuration/actions/inspect'
 
 class ConfigurationActionsInspectTest < Test::Unit::TestCase
   class MockConfig
-    include Capistrano::Configuration::Actions::Inspect
+    include Minestrone::Configuration::Actions::Inspect
   end
 
   def setup
@@ -31,10 +31,10 @@ class ConfigurationActionsInspectTest < Test::Unit::TestCase
 
   def test_stream_should_emit_stderr_via_warn
     ch = mock("channel")
-    ch.expects(:[]).with(:server).returns(server("capistrano"))
+    ch.expects(:[]).with(:server).returns(server("minestrone"))
     @config.expects(:invoke_command).yields(ch, :err, "something streamed")
     @config.expects(:puts).never
-    @config.expects(:warn).with("[err :: capistrano] something streamed")
+    @config.expects(:warn).with("[err :: minestrone] something streamed")
     @config.stream("tail -f foo.log")
   end
 
@@ -50,9 +50,9 @@ class ConfigurationActionsInspectTest < Test::Unit::TestCase
 
   def test_capture_with_stderr_should_emit_stderr_via_warn
     ch = mock("channel")
-    ch.expects(:[]).with(:server).returns(server("capistrano"))
+    ch.expects(:[]).with(:server).returns(server("minestrone"))
     @config.expects(:invoke_command).yields(ch, :err, "boom")
-    @config.expects(:warn).with("[err :: capistrano] boom")
+    @config.expects(:warn).with("[err :: minestrone] boom")
     @config.capture("hostname")
   end
 

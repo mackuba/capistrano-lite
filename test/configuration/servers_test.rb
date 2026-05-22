@@ -1,6 +1,6 @@
 require "utils"
-require 'capistrano/task_definition'
-require 'capistrano/configuration/servers'
+require 'minestrone/task_definition'
+require 'minestrone/configuration/servers'
 
 class ConfigurationServersTest < Test::Unit::TestCase
   class MockConfig
@@ -8,7 +8,7 @@ class ConfigurationServersTest < Test::Unit::TestCase
       initialize_servers
     end
 
-    include Capistrano::Configuration::Servers
+    include Minestrone::Configuration::Servers
   end
 
   def setup
@@ -81,7 +81,7 @@ class ConfigurationServersTest < Test::Unit::TestCase
 
   def test_resolved_server_should_raise_when_no_server_is_configured
     config = MockConfig.new
-    assert_raises(Capistrano::NoMatchingServersError) { config.resolved_server }
+    assert_raises(Minestrone::NoMatchingServersError) { config.resolved_server }
   end
 
   def test_server_should_reject_multiple_hosts

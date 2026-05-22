@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/cli/help'
+require 'minestrone/cli/help'
 
 class CLIHelpTest < Test::Unit::TestCase
   class MockCLI
@@ -14,7 +14,7 @@ class CLIHelpTest < Test::Unit::TestCase
       @called_original = config
     end
 
-    include Capistrano::CLI::Help
+    include Minestrone::CLI::Help
   end
 
   def setup
@@ -164,7 +164,7 @@ class CLIHelpTest < Test::Unit::TestCase
   end
 
   def test_long_help_should_load_and_format_help_txt_file
-    help_file = File.expand_path("../../lib/capistrano/cli/help.txt", __dir__)
+    help_file = File.expand_path("../../lib/minestrone/cli/help.txt", __dir__)
     File.expects(:read).with(help_file).returns("text")
     @ui.expects(:say).with("text\n")
     @cli.long_help

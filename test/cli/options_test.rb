@@ -1,10 +1,10 @@
 require "utils"
-require 'capistrano/cli'
+require 'minestrone/cli'
 
 class CLIOptionsTest < Test::Unit::TestCase
   class ExitException < Exception; end
 
-  class MockCLI < Capistrano::CLI
+  class MockCLI < Minestrone::CLI
     def initialize(args = [])
       @args = args
     end
@@ -184,7 +184,7 @@ class CLIOptionsTest < Test::Unit::TestCase
 
   def test_parse_options_with_V_should_show_version_and_exit
     @cli.args << "-V"
-    @cli.expects(:puts).with { |s| s.include?(Capistrano::Version.to_s) }
+    @cli.expects(:puts).with { |s| s.include?(Minestrone::Version.to_s) }
     @cli.expects(:exit).raises(ExitException)
     assert_raises(ExitException) { @cli.parse_options! }
   end

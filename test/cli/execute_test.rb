@@ -1,8 +1,8 @@
 require "utils"
-require 'capistrano/cli'
+require 'minestrone/cli'
 
 class CLIExecuteTest < Test::Unit::TestCase
-  class MockCLI < Capistrano::CLI
+  class MockCLI < Minestrone::CLI
     attr_reader :options
 
     def initialize
@@ -41,15 +41,15 @@ class CLIExecuteTest < Test::Unit::TestCase
   end
 
   def test_execute_should_load_sysconf_if_sysconf_set_and_exists
-    @cli.options[:sysconf] = "/etc/capistrano.conf"
-    @config.expects(:load).with("/etc/capistrano.conf")
-    File.expects(:file?).with("/etc/capistrano.conf").returns(true)
+    @cli.options[:sysconf] = "/etc/minestrone.conf"
+    @config.expects(:load).with("/etc/minestrone.conf")
+    File.expects(:file?).with("/etc/minestrone.conf").returns(true)
     @cli.execute!
   end
 
   def test_execute_should_not_load_sysconf_when_sysconf_set_and_not_exists
-    @cli.options[:sysconf] = "/etc/capistrano.conf"
-    File.expects(:file?).with("/etc/capistrano.conf").returns(false)
+    @cli.options[:sysconf] = "/etc/minestrone.conf"
+    File.expects(:file?).with("/etc/minestrone.conf").returns(false)
     @cli.execute!
   end
 
@@ -104,7 +104,7 @@ class CLIExecuteTest < Test::Unit::TestCase
   end
 
   def test_instantiate_configuration_should_return_new_configuration_instance
-    assert_instance_of Capistrano::Configuration, MockCLI.new.instantiate_configuration
+    assert_instance_of Minestrone::Configuration, MockCLI.new.instantiate_configuration
   end
 
   def test_handle_error_with_auth_error_should_abort_with_message_including_user_name
@@ -114,7 +114,7 @@ class CLIExecuteTest < Test::Unit::TestCase
 
   def test_handle_error_with_cap_error_should_abort_with_message
     @cli.expects(:abort).with("Wish you were here")
-    @cli.handle_error(Capistrano::Error.new("Wish you were here"))
+    @cli.handle_error(Minestrone::Error.new("Wish you were here"))
   end
 
   def test_handle_error_with_other_errors_should_reraise_error

@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'minestrone/cli'
+
+Minestrone::CLI.execute

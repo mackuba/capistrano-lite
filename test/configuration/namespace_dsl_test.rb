@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/configuration/namespaces'
+require 'minestrone/configuration/namespaces'
 
 class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
   class MockConfig
@@ -11,7 +11,7 @@ class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
       initialize_namespaces
     end
 
-    include Capistrano::Configuration::Namespaces
+    include Minestrone::Configuration::Namespaces
   end
 
   def setup

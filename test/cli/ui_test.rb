@@ -1,8 +1,8 @@
 require "utils"
-require 'capistrano/cli'
+require 'minestrone/cli'
 
 class CLIUITest < Test::Unit::TestCase
-  class MockCLI < Capistrano::CLI; end
+  class MockCLI < Minestrone::CLI; end
 
   def test_ui_should_return_highline_instance
     assert_instance_of HighLine, MockCLI.ui

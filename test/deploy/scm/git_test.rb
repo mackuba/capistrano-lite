@@ -1,8 +1,8 @@
 require "utils"
-require 'capistrano/recipes/deploy/scm/git'
+require 'minestrone/recipes/deploy/scm/git'
 
 class DeploySCMGitTest < Test::Unit::TestCase
-  class TestSCM < Capistrano::Deploy::SCM::Git
+  class TestSCM < Minestrone::Deploy::SCM::Git
     default_command "git"
   end
 
@@ -228,25 +228,25 @@ class DeploySCMGitTest < Test::Unit::TestCase
   end
 
   def test_prompt_password
-    require 'capistrano/logger'
-    require 'capistrano/cli'
-    Capistrano::CLI.stubs(:password_prompt).returns("opensesame")
+    require 'minestrone/logger'
+    require 'minestrone/cli'
+    Minestrone::CLI.stubs(:password_prompt).returns("opensesame")
 
     text = 'password:'
     assert_equal %("opensesame"\n), @source.handle_data(mock_state, :test_stream, text)
   end
 
   def test_sends_passphrase_if_set
-    require 'capistrano/logger'
+    require 'minestrone/logger'
     text = "passphrase:"
     @config[:scm_passphrase] = "opensesame"
     assert_equal %("opensesame"\n), @source.handle_data(mock_state, :test_stream, text)
   end
 
   def test_prompt_passphrase
-    require 'capistrano/logger'
-    require 'capistrano/cli'
-    Capistrano::CLI.stubs(:password_prompt).returns("opensesame")
+    require 'minestrone/logger'
+    require 'minestrone/cli'
+    Minestrone::CLI.stubs(:password_prompt).returns("opensesame")
 
     text = 'passphrase:'
     assert_equal %("opensesame"\n), @source.handle_data(mock_state, :test_stream, text)

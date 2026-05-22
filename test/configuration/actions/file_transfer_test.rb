@@ -1,9 +1,9 @@
 require "utils"
-require 'capistrano/configuration/actions/file_transfer'
+require 'minestrone/configuration/actions/file_transfer'
 
 class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
   class MockConfig
-    include Capistrano::Configuration::Actions::FileTransfer
+    include Minestrone::Configuration::Actions::FileTransfer
     attr_accessor :session, :dry_run
   end
 
@@ -55,7 +55,7 @@ class ConfigurationActionsFileTransferTest < Test::Unit::TestCase
   def test_transfer_should_invoke_transfer_on_the_configured_server
     @config.session = 1
     @config.expects(:execute_on_server).yields
-    Capistrano::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", 1, {:foo => "bar", :logger => @config.logger})
+    Minestrone::Transfer.expects(:process).with(:up, "testl.txt", "testr.txt", 1, {:foo => "bar", :logger => @config.logger})
     @config.transfer(:up, "testl.txt", "testr.txt", :foo => "bar")
   end
 end

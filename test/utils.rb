@@ -2,11 +2,11 @@ require 'bundler/setup'
 require 'test/unit'
 require 'mocha/test_unit'
 
-require 'capistrano/server_definition'
+require 'minestrone/server_definition'
 
 module TestExtensions
   def server(host, options = {})
-    Capistrano::ServerDefinition.new(host, options)
+    Minestrone::ServerDefinition.new(host, options)
   end
 
   def namespace(fqn = nil)
@@ -17,7 +17,7 @@ module TestExtensions
 
   def new_task(name, namespace = @namespace, options = {}, &block)
     block ||= Proc.new {}
-    task = Capistrano::TaskDefinition.new(name, namespace, options, &block)
+    task = Minestrone::TaskDefinition.new(name, namespace, options, &block)
     assert_equal block, task.body
     return task
   end

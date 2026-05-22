@@ -1,10 +1,10 @@
 require "utils"
-require 'capistrano/recipes/deploy/local_dependency'
+require 'minestrone/recipes/deploy/local_dependency'
 
 class LocalDependencyTest < Test::Unit::TestCase
   def setup
     @config = { }
-    @dependency = Capistrano::Deploy::LocalDependency.new(@config)
+    @dependency = Minestrone::Deploy::LocalDependency.new(@config)
   end
 
   def test_should_use_standard_error_message

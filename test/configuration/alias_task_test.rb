@@ -1,8 +1,8 @@
 require 'utils'
-require 'capistrano/configuration/alias_task'
-require 'capistrano/configuration/execution'
-require 'capistrano/configuration/namespaces'
-require 'capistrano/task_definition'
+require 'minestrone/configuration/alias_task'
+require 'minestrone/configuration/execution'
+require 'minestrone/configuration/namespaces'
+require 'minestrone/task_definition'
 
 class AliasTaskTest < Test::Unit::TestCase
   class MockConfig
@@ -16,9 +16,9 @@ class AliasTaskTest < Test::Unit::TestCase
       initialize_namespaces
     end
 
-    include Capistrano::Configuration::AliasTask
-    include Capistrano::Configuration::Execution
-    include Capistrano::Configuration::Namespaces
+    include Minestrone::Configuration::AliasTask
+    include Minestrone::Configuration::Execution
+    include Minestrone::Configuration::Namespaces
   end
 
   def setup
@@ -68,7 +68,7 @@ class AliasTaskTest < Test::Unit::TestCase
   end
 
   def test_raise_exception_when_task_doesnt_exist
-    assert_raises(Capistrano::NoSuchTaskError) { @config.alias_task 'non_existant_task', 'fail_miserably' }
+    assert_raises(Minestrone::NoSuchTaskError) { @config.alias_task 'non_existant_task', 'fail_miserably' }
   end
 
   def test_convert_task_names_using_to_str

@@ -1,10 +1,10 @@
 require 'utils'
-require 'capistrano/configuration'
+require 'minestrone/configuration'
 
 class RecipesTest < Test::Unit::TestCase
 
   def setup
-    @config = Capistrano::Configuration.new
+    @config = Minestrone::Configuration.new
     @config.stubs(:logger).returns(stub_everything)
   end
 

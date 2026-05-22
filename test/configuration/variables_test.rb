@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/configuration/variables'
+require 'minestrone/configuration/variables'
 
 class ConfigurationVariablesTest < Test::Unit::TestCase
   class MockConfig
@@ -10,7 +10,7 @@ class ConfigurationVariablesTest < Test::Unit::TestCase
       initialize_variables
     end
 
-    include Capistrano::Configuration::Variables
+    include Minestrone::Configuration::Variables
   end
 
   def setup

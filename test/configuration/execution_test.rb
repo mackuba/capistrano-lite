@@ -1,6 +1,6 @@
 require "utils"
-require 'capistrano/configuration/execution'
-require 'capistrano/task_definition'
+require 'minestrone/configuration/execution'
+require 'minestrone/task_definition'
 
 class ConfigurationExecutionTest < Test::Unit::TestCase
   class MockConfig
@@ -19,7 +19,7 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
       initialize_execution
     end
 
-    include Capistrano::Configuration::Execution
+    include Minestrone::Configuration::Execution
   end
 
   def setup
@@ -135,7 +135,7 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
 
   def test_find_and_execute_task_should_raise_error_when_task_cannot_be_found
     @config.expects(:find_task).with("path:to:task").returns(nil)
-    assert_raises(Capistrano::NoSuchTaskError) { @config.find_and_execute_task("path:to:task") }
+    assert_raises(Minestrone::NoSuchTaskError) { @config.find_and_execute_task("path:to:task") }
   end
 
   def test_find_and_execute_task_should_execute_task_when_task_is_found
@@ -171,6 +171,6 @@ class ConfigurationExecutionTest < Test::Unit::TestCase
 
   def new_task(namespace, name, options = {}, &block)
     block ||= stack_inspector
-    namespace.tasks[name] = Capistrano::TaskDefinition.new(name, namespace, &block)
+    namespace.tasks[name] = Minestrone::TaskDefinition.new(name, namespace, &block)
   end
 end

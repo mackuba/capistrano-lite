@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/configuration'
+require 'minestrone/configuration'
 
 # These tests are only for testing the integration of the various components
 # of the Configuration class. To test specific features, please look at the
@@ -7,11 +7,11 @@ require 'capistrano/configuration'
 
 class ConfigurationTest < Test::Unit::TestCase
   def setup
-    @config = Capistrano::Configuration.new
+    @config = Minestrone::Configuration.new
   end
 
   def test_connections_execution_loading_namespaces_servers_and_variables_modules_should_integrate_correctly
-    Capistrano::SSH.expects(:connect).with { |s,c| s.host == "www.capistrano.test" && c == @config }.returns(:session)
+    Minestrone::SSH.expects(:connect).with { |s,c| s.host == "www.minestrone.test" && c == @config }.returns(:session)
 
     process_args = Proc.new do |command, session, opts|
       command == "echo 'hello world'" &&
@@ -19,10 +19,10 @@ class ConfigurationTest < Test::Unit::TestCase
       opts == { :logger => @config.logger, :eof => true, :configuration => @config }
     end
 
-    Capistrano::Command.expects(:process).with(&process_args)
+    Minestrone::Command.expects(:process).with(&process_args)
 
     @config.load do
-      server "www.capistrano.test"
+      server "www.minestrone.test"
       set  :message, "hello world"
       namespace :testing do
         task :example do

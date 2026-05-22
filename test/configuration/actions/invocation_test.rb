@@ -1,6 +1,6 @@
 require "utils"
-require 'capistrano/configuration/actions/invocation'
-require 'capistrano/configuration/actions/file_transfer'
+require 'minestrone/configuration/actions/invocation'
+require 'minestrone/configuration/actions/file_transfer'
 
 class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   class MockConfig
@@ -36,8 +36,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
       yield
     end
 
-    include Capistrano::Configuration::Actions::Invocation
-    include Capistrano::Configuration::Actions::FileTransfer
+    include Minestrone::Configuration::Actions::Invocation
+    include Minestrone::Configuration::Actions::FileTransfer
   end
 
   def setup
@@ -50,7 +50,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_run_options_should_be_passed_to_command_process
-    ::Capistrano::Command.expects(:process).with("ls", @config.session, has_entries(:foo => "bar", :eof => true, :logger => @config.logger, :configuration => @config))
+    ::Minestrone::Command.expects(:process).with("ls", @config.session, has_entries(:foo => "bar", :eof => true, :logger => @config.logger, :configuration => @config))
     @config.run "ls", :foo => "bar"
   end
 
@@ -65,7 +65,7 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     config.dry_run = true
     config.server = "foo"
     config.expects(:execute_on_server).never
-    ::Capistrano::Transfer.expects(:process).never
+    ::Minestrone::Transfer.expects(:process).never
     config.put "foo", "bar", :mode => 0644
   end
 
@@ -100,18 +100,18 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
   end
 
   def test_default_io_proc_should_log_stdout_arguments_as_info
-    ch = { :host => "capistrano",
-           :server => server("capistrano"),
+    ch = { :host => "minestrone",
+           :server => server("minestrone"),
            :options => { :logger => mock("logger") } }
-    ch[:options][:logger].expects(:info).with("data stuff", "out :: capistrano")
+    ch[:options][:logger].expects(:info).with("data stuff", "out :: minestrone")
     MockConfig.default_io_proc[ch, :out, "data stuff"]
   end
 
   def test_default_io_proc_should_log_stderr_arguments_as_important
-    ch = { :host => "capistrano",
-           :server => server("capistrano"),
+    ch = { :host => "minestrone",
+           :server => server("minestrone"),
            :options => { :logger => mock("logger") } }
-    ch[:options][:logger].expects(:important).with("data stuff", "err :: capistrano")
+    ch[:options][:logger].expects(:important).with("data stuff", "err :: minestrone")
     MockConfig.default_io_proc[ch, :err, "data stuff"]
   end
 
@@ -170,8 +170,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
 
   def test_sudo_behavior_callback_with_incorrect_password_on_first_prompt
     ch = mock("channel")
-    ch.stubs(:[]).with(:host).returns("capistrano")
-    ch.stubs(:[]).with(:server).returns(server("capistrano"))
+    ch.stubs(:[]).with(:host).returns("minestrone")
+    ch.stubs(:[]).with(:server).returns(server("minestrone"))
     @config.expects(:reset!).with(:password)
     @config.sudo_behavior_callback(nil)[ch, nil, "Sorry, try again."]
   end
@@ -180,8 +180,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
     callback = @config.sudo_behavior_callback(nil)
 
     ch = mock("channel")
-    ch.stubs(:[]).with(:host).returns("capistrano")
-    ch.stubs(:[]).with(:server).returns(server("capistrano"))
+    ch.stubs(:[]).with(:host).returns("minestrone")
+    ch.stubs(:[]).with(:server).returns(server("minestrone"))
     ch2 = mock("channel")
     ch2.stubs(:[]).with(:host).returns("cap2")
     ch2.stubs(:[]).with(:server).returns(server("cap2"))
@@ -195,8 +195,8 @@ class ConfigurationActionsInvocationTest < Test::Unit::TestCase
 
   def test_sudo_behavior_callback_should_reset_password_and_prompt_again_if_output_includes_both_cues
     ch = mock("channel")
-    ch.stubs(:[]).with(:host).returns("capistrano")
-    ch.stubs(:[]).with(:server).returns(server("capistrano"))
+    ch.stubs(:[]).with(:host).returns("minestrone")
+    ch.stubs(:[]).with(:server).returns(server("minestrone"))
     ch.expects(:send_data, "password!\n").times(2)
 
     @config.set(:password, "password!")

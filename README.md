@@ -1,11 +1,11 @@
-# Capistrano Lite
+# Minestrone 🍲
 
-Capistrano Lite (temporary name) is a simplified fork of old [Capistrano](https://github.com/capistrano/capistrano) 2.x.
+Minestrone is a simplified fork of old [Capistrano](https://github.com/minestrone/minestrone) 2.x. A kind of… mini-capistrano.
 
 
 ## Project description
 
-Capistrano Lite is a tool for deploying Ruby applications to a server, based on the code of the classic deploy tool Capistrano, the older 2.x version, but simplified and cleaned up, with various features removed that I decided I'm never going to need myself. The focus is on deploying Ruby apps to a single host from Git over SSH. It keeps the core deploy DSL with compatibility maintained where possible, the git remote cache and copy strategies, release rotation with rollbacks, and the logging/formatting code.
+Minestrone is a tool for deploying Ruby applications to a server, based on the code of the classic deploy tool Capistrano, the older 2.x version, but simplified and cleaned up, with various features removed that I decided I'm never going to need myself. The focus is on deploying Ruby apps to a single host from Git over SSH. It keeps the core deploy DSL with compatibility maintained where possible, the git remote cache and copy strategies, release rotation with rollbacks, and the logging/formatting code.
 
 
 ### What is removed

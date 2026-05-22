@@ -1,5 +1,5 @@
 require 'utils'
-require 'capistrano/configuration/loading'
+require 'minestrone/configuration/loading'
 
 class ConfigurationLoadingTest < Test::Unit::TestCase
   class MockConfig
@@ -15,7 +15,7 @@ class ConfigurationLoadingTest < Test::Unit::TestCase
       @ping = value
     end
 
-    include Capistrano::Configuration::Loading
+    include Minestrone::Configuration::Loading
   end
 
   def setup
@@ -30,7 +30,7 @@ class ConfigurationLoadingTest < Test::Unit::TestCase
   def test_initialize_should_init_collections
     assert @config.original_initialize_called
     assert @config.load_paths.include?(".")
-    assert @config.load_paths.detect { |v| v =~ /capistrano\/recipes$/ }
+    assert @config.load_paths.detect { |v| v =~ /minestrone\/recipes$/ }
   end
 
   def test_load_with_options_and_block_should_raise_argument_error

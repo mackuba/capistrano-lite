@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/configuration/callbacks'
+require 'minestrone/configuration/callbacks'
 
 class ConfigurationCallbacksTest < Test::Unit::TestCase
   class MockConfig
@@ -22,7 +22,7 @@ class ConfigurationCallbacksTest < Test::Unit::TestCase
       @called << task
     end
 
-    include Capistrano::Configuration::Callbacks
+    include Minestrone::Configuration::Callbacks
   end
 
   def setup

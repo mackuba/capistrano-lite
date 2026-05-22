@@ -1,5 +1,5 @@
 require "utils"
-require 'capistrano/task_definition'
+require 'minestrone/task_definition'
 
 # Silences the wanrnings raised in the two deprecation tests
 $VERBOSE = nil
@@ -47,7 +47,7 @@ class TaskDefinitionTest < Test::Unit::TestCase
 
   def test_task_should_require_block
     assert_raises(ArgumentError) do
-      Capistrano::TaskDefinition.new(:testing, @namespace)
+      Minestrone::TaskDefinition.new(:testing, @namespace)
     end
   end
 
