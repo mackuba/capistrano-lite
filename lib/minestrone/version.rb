@@ -2,12 +2,8 @@
 
 module Minestrone
   class Version
-    MAJOR = 2
-    MINOR = 15
-    PATCH = 11
-
     def self.to_s
-      "#{MAJOR}.#{MINOR}.#{PATCH}"
+      "0.0.1"
     end
   end
 
